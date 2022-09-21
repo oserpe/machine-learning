@@ -1,4 +1,5 @@
 import pandas as pd
+from .models.DecisionTree import DecisionTree
 
 
 def categorize_data_with_equal_frequency(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
@@ -16,23 +17,39 @@ def categorize_data_with_equal_width(data_df: pd.DataFrame, columns: dict[str, i
 
     return data_df
 
+def main(dataset: pd.DataFrame):
+    # drop continous columns
+    continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
+    dataset = dataset.drop(continuous_columns, axis=1)
+
+    class_column = "Creditability"
+    decision_tree = DecisionTree()
+
+    decision_tree.train(dataset, class_column)
+
+    decision_tree.draw()
+
+
+
 
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
-    categorical_columns = {
-        "Duration of Credit (month)": 12,
-        "Credit Amount": 10,
-        "Age (years)": 10
-    }
+    main(data_df)
 
-    print(data_df)
+    # categorical_columns = {
+    #     "Duration of Credit (month)": 12,
+    #     "Credit Amount": 10,
+    #     "Age (years)": 10
+    # }
 
-    data_df = categorize_data_with_equal_frequency(
-        data_df, categorical_columns)
+    # print(data_df)
 
-    print(data_df)
-    print(data_df["Duration of Credit (month)"].value_counts())
-    print(data_df["Credit Amount"].value_counts())
-    print(data_df["Age (years)"].value_counts())
+    # data_df = categorize_data_with_equal_frequency(
+    #     data_df, categorical_columns)
+
+    # print(data_df)
+    # print(data_df["Duration of Credit (month)"].value_counts())
+    # print(data_df["Credit Amount"].value_counts())
+    # print(data_df["Age (years)"].value_counts())

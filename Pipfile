@@ -11,6 +11,8 @@ ipython = "*"
 sklearn = "*"
 numpy = "*"
 seaborn = "*"
+networkx = "*"
+pydot = "*"
 
 [dev-packages]
 
