@@ -72,14 +72,23 @@ class DecisionTree:
     def get_all_attribute_values(self, dataset: pd.DataFrame):
         return {attribute: self.get_attribute_values(dataset, attribute) for attribute in dataset.columns}
 
+    def create_and_set_node(self, node_type: NodeType, value=None, depth=0):
+        node = Node(node_type, value, depth)
+        self.tree.add_node(node.id, label=str(node), level=depth)
+        properties = {
+            "value": str(value),
+            "id": node.id,
+            "type": str(node_type),
+        }
+        nx.set_node_attributes(self.tree, {node.id: properties})
+        return node
+
     def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
         # check if class column value is unique
         class_values = dataset[self.class_column].unique()
         if len(class_values) == 1:
             # return leaf node with class value
-            leaf_node = Node(NodeType.LEAF, value=class_values[0], depth=depth)
-            self.tree.add_node(leaf_node.id, label=str(leaf_node), level=depth)
-            
+            leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_values[0], depth=depth)
             return leaf_node
 
         elif len(attributes) == 0:
@@ -90,8 +99,7 @@ class DecisionTree:
 
             print(f"Most common class value: {class_mode}")
             
-            leaf_node = Node(NodeType.LEAF, value=class_mode, depth=depth)
-            self.tree.add_node(leaf_node.id, label=str(leaf_node), level=depth)
+            leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_mode, depth=depth)
             
             return leaf_node
 
@@ -115,9 +123,7 @@ class DecisionTree:
                 max_gain_attribute = attribute
 
         # creamos el nodo "atributo"
-        max_gain_attribute_node = Node(NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
-        
-        self.tree.add_node(max_gain_attribute_node.id, label=str(max_gain_attribute_node), level=depth)
+        max_gain_attribute_node = self.create_and_set_node(NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
 
         # update attributes list
         attributes.remove(max_gain_attribute)
@@ -129,8 +135,7 @@ class DecisionTree:
             if len(dataset_by_attribute_value) == 0:
                 continue
             
-            attribute_value_node = Node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
-            self.tree.add_node(attribute_value_node.id, label=str(attribute_value_node), level=depth+1)
+            attribute_value_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
 
             self.tree.add_edge(max_gain_attribute_node.id, attribute_value_node.id)
 
@@ -150,23 +155,22 @@ class DecisionTree:
 
         attributes = dataset.columns.drop(class_column).tolist()
 
-        self.tree = nx.Graph()
+        self.tree = nx.DiGraph()
 
-        self.root_node = self.build_tree_recursive(dataset, attributes)
+        self.build_tree_recursive(dataset, attributes)
 
-        print(self.root_node)
+    def get_next_node(self, node, attribute_value):
 
-        self.tree.add_node(self.root_node.id, label=str(self.root_node), level=0)
+        successors = self.tree.successors(node["id"])
 
-    # def get_next_node(self, node: nx.Node, attribute_value):
-    #     child_node_value = self.tree.neighbors(node)[attribute_value]
-
-    #     if child_node_value["type"] == "leaf":
-    #         return child_node_value
-
-    #     next_node_successor = self.tree.nodes[child_node_value]
-
-    #     return next_node_successor
+        for successor_id in successors:
+            successor_node = self.tree.nodes[successor_id]
+            if successor_node["value"] == str(attribute_value):
+                # get the successor of the successor as an attribute value node its 
+                # connected to another attribute node or a leaf node
+                successor_of_successor_id = list(self.tree.successors(successor_id))[0]
+                return self.tree.nodes[successor_of_successor_id]
+        
 
     def draw(self):
 
@@ -175,21 +179,25 @@ class DecisionTree:
 
         g.from_nx(self.tree)
 
-        g.show('tree.html')
+        g.show('tree2.html')
 
 
-    # def classify(self, sample: pd.DataFrame):
-    #     # get root node and its attribute
-    #     current_node = self.root_node
-    #     current_attribute = current_node["attribute"]
+    def classify(self, sample: pd.DataFrame):
+        # get root node and its attribute
+        current_node = self.tree.nodes[0]
+        current_attribute = current_node["value"]
 
-    #     # get attribute value from sample
-    #     attribute_value = sample[current_attribute]
+        # get attribute value from sample
+        attribute_value = sample[current_attribute]
 
-    #     # for every other attribute, get the next node until we reach a leaf node
-    #     while current_node["type"] != "leaf":
-    #         current_node = self.get_next_node(current_node, attribute_value)
-    #         current_attribute = current_node["attribute"]
-    #         attribute_value = sample[current_attribute]
+        # for every other attribute, get the next node until we reach a leaf node
+        while current_node["type"] != str(NodeType.LEAF):
+            current_node = self.get_next_node(current_node, attribute_value)
 
-    #     return current_node["value"]
+            if current_node["type"] == str(NodeType.LEAF):
+                return current_node["value"]
+                
+            current_attribute = current_node["value"]
+            attribute_value = sample[current_attribute]
+
+        return current_node["value"]
