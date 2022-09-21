@@ -27,7 +27,7 @@ def main(dataset: pd.DataFrame):
 
     decision_tree.train(dataset, class_column)
 
-    # decision_tree.draw()
+    decision_tree.draw()
 
     # test with a sample
     sample = dataset.iloc[0]

@@ -127,12 +127,23 @@ class DecisionTree:
 
         # update attributes list
         attributes.remove(max_gain_attribute)
-        
+
         # sus hijos se llaman como sus valores
         for attribute_value in self.values_by_attribute[max_gain_attribute]:
             dataset_by_attribute_value = dataset[(dataset[max_gain_attribute] == attribute_value)]
             
             if len(dataset_by_attribute_value) == 0:
+
+                print("No remaining samples...\nChoosing most common class value...")
+                class_mode = dataset[self.class_column].mode()[0]
+
+                print(f"Most common class value: {class_mode}")
+
+                attribute_child_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
+                self.tree.add_edge(max_gain_attribute_node.id, attribute_child_node.id)
+
+                leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_mode, depth=depth+2)
+                self.tree.add_edge(attribute_child_node.id, leaf_node.id)
                 continue
             
             attribute_value_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
@@ -171,6 +182,9 @@ class DecisionTree:
                 successor_of_successor_id = list(self.tree.successors(successor_id))[0]
                 return self.tree.nodes[successor_of_successor_id]
         
+        # if no successor is found, return the leaf node associated to the node
+        # the value wasn't even present in the training set
+        
 
     def draw(self):
 
@@ -196,7 +210,7 @@ class DecisionTree:
 
             if current_node["type"] == str(NodeType.LEAF):
                 return current_node["value"]
-                
+
             current_attribute = current_node["value"]
             attribute_value = sample[current_attribute]
 
