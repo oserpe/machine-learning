@@ -4,6 +4,7 @@ from .Node import Node, NodeType
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
+from pyvis.network import Network
 
 def relative_frequency(count, total, classes_count, laplace_correction=False):
     """Calculates the relative frequency of a given count."""
@@ -77,7 +78,7 @@ class DecisionTree:
         if len(class_values) == 1:
             # return leaf node with class value
             leaf_node = Node(NodeType.LEAF, value=class_values[0], depth=depth)
-            self.tree.add_node(leaf_node, label=str(leaf_node), depth=depth)
+            self.tree.add_node(leaf_node.id, label=str(leaf_node), level=depth)
             
             return leaf_node
 
@@ -90,7 +91,7 @@ class DecisionTree:
             print(f"Most common class value: {class_mode}")
             
             leaf_node = Node(NodeType.LEAF, value=class_mode, depth=depth)
-            self.tree.add_node(leaf_node, label=str(leaf_node), depth=depth)
+            self.tree.add_node(leaf_node.id, label=str(leaf_node), level=depth)
             
             return leaf_node
 
@@ -113,12 +114,10 @@ class DecisionTree:
                 max_gain = attribute_gain
                 max_gain_attribute = attribute
 
-        if max_gain == 0:
-            print(attributes, len(dataset))
         # creamos el nodo "atributo"
         max_gain_attribute_node = Node(NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
         
-        self.tree.add_node(max_gain_attribute_node, label=str(max_gain_attribute_node), depth=depth)
+        self.tree.add_node(max_gain_attribute_node.id, label=str(max_gain_attribute_node), level=depth)
 
         # update attributes list
         attributes.remove(max_gain_attribute)
@@ -131,15 +130,15 @@ class DecisionTree:
                 continue
             
             attribute_value_node = Node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
-            self.tree.add_node(attribute_value_node, label=str(attribute_value_node), depth=depth+1)
+            self.tree.add_node(attribute_value_node.id, label=str(attribute_value_node), level=depth+1)
 
-            self.tree.add_edge(max_gain_attribute_node, attribute_value_node)
+            self.tree.add_edge(max_gain_attribute_node.id, attribute_value_node.id)
 
             # creamos el subarbol
             attribute_child_node = self.build_tree_recursive(
                 dataset_by_attribute_value, attributes.copy(), depth=depth+2)
                 
-            self.tree.add_edge(attribute_value_node, attribute_child_node)
+            self.tree.add_edge(attribute_value_node.id, attribute_child_node.id)
 
         return max_gain_attribute_node
 
@@ -153,10 +152,11 @@ class DecisionTree:
 
         self.tree = nx.Graph()
 
-        self.root_node = self.build_tree_recursive(
-            dataset, attributes)
+        self.root_node = self.build_tree_recursive(dataset, attributes)
 
-        self.tree.add_node(self.root_node, label=str(self.root_node), depth=0)
+        print(self.root_node)
+
+        self.tree.add_node(self.root_node.id, label=str(self.root_node), level=0)
 
     # def get_next_node(self, node: nx.Node, attribute_value):
     #     child_node_value = self.tree.neighbors(node)[attribute_value]
@@ -169,11 +169,14 @@ class DecisionTree:
     #     return next_node_successor
 
     def draw(self):
-        pos = graphviz_layout(self.tree, prog="dot") 
-        nx.draw(self.tree, pos)
-        labels = nx.get_node_attributes(self.tree, "type")
-        nx.draw_networkx_labels(self.tree, pos, labels)
-        plt.show()
+
+        g = Network(height='100%', width='100%',
+                    notebook=True, layout='hierarchical')
+
+        g.from_nx(self.tree)
+
+        g.show('tree.html')
+
 
     # def classify(self, sample: pd.DataFrame):
     #     # get root node and its attribute

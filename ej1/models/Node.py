@@ -18,8 +18,8 @@ class Node():
 
     def __str__(self):
         if self.value is None:
-            return f"{self.node_type}"
-        return f'{self.node_type}\n{self.value}'
+            return f"{self.node_type}\n{self.id}\n{self.depth}"
+        return f'{self.node_type}\n{self.id}\n{self.depth}\n{self.value}'
 
     def __hash__(self) -> int:
         return self.id

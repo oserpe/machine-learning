@@ -13,6 +13,7 @@ numpy = "*"
 seaborn = "*"
 networkx = "*"
 pydot = "*"
+pyvis = "*"
 
 [dev-packages]
 
