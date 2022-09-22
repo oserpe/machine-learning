@@ -1,5 +1,6 @@
 import pandas as pd
 from .models.DecisionTree import DecisionTree
+from ..metrics import Metrics
 
 
 def categorize_data_with_equal_frequency(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
@@ -35,6 +36,23 @@ def main(dataset: pd.DataFrame):
     sample = sample.drop(class_column)
 
     print(f'Creditability: {decision_tree.classify(sample)}')
+
+
+    # test with the whole dataset
+    prediction_column = "Classification"
+    results = decision_tree.test(dataset, prediction_column)
+
+    # print metrics
+    # get the prediction column values
+    y_predictions = results[prediction_column].values.tolist()
+
+    # get the class column values
+    y = list(map(str,results[class_column].values.tolist()))
+
+    labels = ["0", "1"]
+
+    cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
 
 

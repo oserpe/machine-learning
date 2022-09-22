@@ -215,3 +215,7 @@ class DecisionTree:
             attribute_value = sample[current_attribute]
 
         return current_node["value"]
+
+    def test(self, dataset: pd.DataFrame, prediction_column: str) -> pd.DataFrame:
+        dataset[prediction_column] = dataset.apply(self.classify, axis=1)
+        return dataset

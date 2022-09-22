@@ -3,7 +3,7 @@
 import pandas as pd
 from IPython.display import display
 import matplotlib
-matplotlib.use('Qt5Agg')
+# matplotlib.use('Qt5Agg')
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle

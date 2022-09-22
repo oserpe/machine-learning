@@ -24,3 +24,10 @@ class RandomForest:
     def classify(self, sample: pd.DataFrame):
         votes = [tree.classify(sample) for tree in self.trees]
         return max(set(votes), key=votes.count)
+
+    def test(self, dataset: pd.DataFrame, prediction_column: str) -> list[pd.DataFrame]:
+        results = []
+        for tree in self.trees:
+            results.append(tree.test(dataset, prediction_column))
+            
+        return results
