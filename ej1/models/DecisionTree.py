@@ -77,9 +77,9 @@ class DecisionTree:
         node = Node(node_type, value, depth)
         self.tree.add_node(node.id, label=str(node), level=depth)
         properties = {
-            "value": str(value),
-            "id": node.id,
-            "type": str(node_type),
+            "node_value": str(value),
+            "node_id": node.id,
+            "node_type": str(node_type),
         }
         nx.set_node_attributes(self.tree, {node.id: properties})
         return node
@@ -174,11 +174,11 @@ class DecisionTree:
 
     def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
 
-        successors = tree.successors(node["id"])
+        successors = tree.successors(node["node_id"])
 
         for successor_id in successors:
             successor_node = tree.nodes[successor_id]
-            if successor_node["value"] == str(attribute_value):
+            if successor_node["node_value"] == str(attribute_value):
                 # get the successor of the successor as an attribute value node its 
                 # connected to another attribute node or a leaf node
                 successor_of_successor_id = list(tree.successors(successor_id))[0]
@@ -210,37 +210,37 @@ class DecisionTree:
     def classify_from_tree(self, sample: pd.DataFrame, tree: nx.DiGraph):
         # get root node and its attribute
         current_node = self.get_root_node_from_tree(tree)
-        current_attribute = current_node["value"]
+        current_attribute = current_node["node_value"]
 
         # get attribute value from sample
         attribute_value = sample[current_attribute]
 
         # for every other attribute, get the next node until we reach a leaf node
-        while current_node["type"] != str(NodeType.LEAF):
+        while current_node["node_type"] != str(NodeType.LEAF):
             current_node = self.get_next_node(current_node, attribute_value, tree)
 
-            if current_node["type"] == str(NodeType.LEAF):
-                return current_node["value"]
+            if current_node["node_type"] == str(NodeType.LEAF):
+                return current_node["node_value"]
 
-            current_attribute = current_node["value"]
+            current_attribute = current_node["node_value"]
             attribute_value = sample[current_attribute]
 
-        return current_node["value"]
+        return current_node["node_value"]
 
 
     def prune(self, dataset: pd.DataFrame):
         root_node = self.get_root_node()
-        self.prune_recursive(dataset, root_node["id"])
+        self.prune_recursive(dataset, root_node["node_id"])
 
     def prune_recursive(self, dataset: pd.DataFrame, node_id: int):
         # BOTTOM-UP PRUNING
 
         current_node = self.tree.nodes[node_id]
 
-        if current_node["type"] == str(NodeType.LEAF):
+        if current_node["node_type"] == str(NodeType.LEAF):
             return
 
-        current_attribute = current_node["value"]
+        current_attribute = current_node["node_value"]
 
         attribute_value_nodes = self.tree.successors()
 
@@ -251,7 +251,7 @@ class DecisionTree:
             next_node_id = list(self.tree.successors(value_node_id))[0]
             # next node is either a leaf node or an attribute node (only one)
 
-            dataset_given_attribute_value = dataset[(dataset[current_attribute] == value_node["value"])]
+            dataset_given_attribute_value = dataset[(dataset[current_attribute] == value_node["node_value"])]
             self.prune_recursive(dataset_given_attribute_value, next_node_id)
             
             current_error = self.calculate_error(dataset_given_attribute_value, self.tree)
