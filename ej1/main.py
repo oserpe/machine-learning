@@ -1,5 +1,8 @@
 import pandas as pd
+
+from .models.TreeType import TreeType
 from .models.DecisionTree import DecisionTree
+from .models.RandomForest import RandomForest
 from ..metrics import Metrics
 
 
@@ -18,29 +21,50 @@ def categorize_data_with_equal_width(data_df: pd.DataFrame, columns: dict[str, i
 
     return data_df
 
-def main(dataset: pd.DataFrame):
+# def main_random_forest(train_dataset, test_dataset, class_column):
+#     # create random forest
+#     random_forest = RandomForest()
+
+#     # train random forest
+#     random_forest.train(train_dataset, class_column)
+
+#     # test random forest
+#     prediction_column = "Classification"
+#     results = random_forest.test(test_dataset, prediction_column)
+
+#     # print metrics
+#     # get the prediction column values
+#     y_predictions = results[prediction_column].values.tolist()
+
+#     # get the class column values
+#     y = list(map(str,results[class_column].values.tolist()))
+
+#     labels = ["0", "1"]
+
+#     cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+#     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+
+
+def main(dataset: pd.DataFrame, tree_type: TreeType):
+    tree = tree_type.get_tree()
     # drop continous columns
     continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
     dataset = dataset.drop(continuous_columns, axis=1)
 
     class_column = "Creditability"
-    decision_tree = DecisionTree()
 
-    decision_tree.train(dataset, class_column)
-
-    decision_tree.draw()
-
-    # test with a sample
-    sample = dataset.iloc[0]
-    print(sample)
-    sample = sample.drop(class_column)
-
-    print(f'Creditability: {decision_tree.classify(sample)}')
+    # get train and test datasets
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
 
-    # test with the whole dataset
+    tree.train(train_dataset, class_column)
+
+    if(tree_type == TreeType.DECISION_TREE):
+        tree.draw()
+
+    # test 
     prediction_column = "Classification"
-    results = decision_tree.test(dataset, prediction_column)
+    results = tree.test(test_dataset, prediction_column)
 
     # print metrics
     # get the prediction column values
@@ -55,12 +79,12 @@ def main(dataset: pd.DataFrame):
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
 
-
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
-    main(data_df)
+    tree_type = TreeType.RANDOM_FOREST
+    main(data_df, tree_type)
 
     # categorical_columns = {
     #     "Duration of Credit (month)": 12,

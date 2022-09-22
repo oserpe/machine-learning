@@ -135,10 +135,10 @@ class DecisionTree:
             
             if len(dataset_by_attribute_value) == 0:
 
-                print("No remaining samples...\nChoosing most common class value...")
+                # print("No remaining samples...\nChoosing most common class value...")
                 class_mode = dataset[self.class_column].mode()[0]
 
-                print(f"Most common class value: {class_mode}")
+                # print(f"Most common class value: {class_mode}")
 
                 attribute_child_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
                 self.tree.add_edge(max_gain_attribute_node.id, attribute_child_node.id)
@@ -160,6 +160,7 @@ class DecisionTree:
         return max_gain_attribute_node
 
     def train(self, dataset: pd.DataFrame, class_column: str):
+        Node.id = -1
         self.class_column = class_column
 
         self.values_by_attribute = self.get_all_attribute_values(

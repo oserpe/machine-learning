@@ -17,6 +17,16 @@ np.random.seed(13)
 
 class Metrics:
     @staticmethod
+    def holdout(dataset: pd.DataFrame, test_size: float = 0.2) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Split the dataset into a train and test set
+        """
+        train_dataset = dataset.sample(frac=1-test_size, replace=False)
+        test_dataset = dataset.drop(train_dataset.index)
+
+        return train_dataset, test_dataset
+
+    @staticmethod
     def k_fold_cross_validation(x, y, k: int, x_column_names: list = None, y_column_names: list = None, folds_to_return: int = None):
         if k <= 0 or k > len(x):
             raise ValueError(
