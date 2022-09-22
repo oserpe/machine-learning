@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
 from pyvis.network import Network
+import copy
 
 def relative_frequency(count, total, classes_count, laplace_correction=False):
     """Calculates the relative frequency of a given count."""
@@ -170,17 +171,17 @@ class DecisionTree:
 
         self.build_tree_recursive(dataset, attributes)
 
-    def get_next_node(self, node, attribute_value):
+    def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
 
-        successors = self.tree.successors(node["id"])
+        successors = tree.successors(node["id"])
 
         for successor_id in successors:
-            successor_node = self.tree.nodes[successor_id]
+            successor_node = tree.nodes[successor_id]
             if successor_node["value"] == str(attribute_value):
                 # get the successor of the successor as an attribute value node its 
                 # connected to another attribute node or a leaf node
-                successor_of_successor_id = list(self.tree.successors(successor_id))[0]
-                return self.tree.nodes[successor_of_successor_id]
+                successor_of_successor_id = list(tree.successors(successor_id))[0]
+                return tree.nodes[successor_of_successor_id]
         
         # if no successor is found, return the leaf node associated to the node
         # the value wasn't even present in the training set
@@ -193,12 +194,21 @@ class DecisionTree:
 
         g.from_nx(self.tree)
 
-        g.show('tree2.html')
+        g.show('tree3.html')
 
+
+    def get_root_node(self):
+        return self.get_root_node_from_tree(self.tree)
+
+    def get_root_node_from_tree(self, tree: nx.DiGraph):
+        return tree.nodes[0]
 
     def classify(self, sample: pd.DataFrame):
+        return self.classify_from_tree(sample, self.tree)
+
+    def classify_from_tree(self, sample: pd.DataFrame, tree: nx.DiGraph):
         # get root node and its attribute
-        current_node = self.tree.nodes[0]
+        current_node = self.get_root_node_from_tree(tree)
         current_attribute = current_node["value"]
 
         # get attribute value from sample
@@ -206,7 +216,7 @@ class DecisionTree:
 
         # for every other attribute, get the next node until we reach a leaf node
         while current_node["type"] != str(NodeType.LEAF):
-            current_node = self.get_next_node(current_node, attribute_value)
+            current_node = self.get_next_node(current_node, attribute_value, tree)
 
             if current_node["type"] == str(NodeType.LEAF):
                 return current_node["value"]
@@ -215,3 +225,54 @@ class DecisionTree:
             attribute_value = sample[current_attribute]
 
         return current_node["value"]
+
+
+    def prune(self, dataset: pd.DataFrame):
+        root_node = self.get_root_node()
+        self.prune_recursive(dataset, root_node["id"])
+
+    def prune_recursive(self, dataset: pd.DataFrame, node_id: int):
+        # BOTTOM-UP PRUNING
+
+        current_node = self.tree.nodes[node_id]
+
+        if current_node["type"] == str(NodeType.LEAF):
+            return
+
+        current_attribute = current_node["value"]
+
+        attribute_value_nodes = self.tree.successors()
+
+        # iterate over attribute value nodes 
+        for value_node_id in attribute_value_nodes:
+            value_node = self.tree.nodes[value_node_id]
+            
+            next_node_id = list(self.tree.successors(value_node_id))[0]
+            # next node is either a leaf node or an attribute node (only one)
+
+            dataset_given_attribute_value = dataset[(dataset[current_attribute] == value_node["value"])]
+            self.prune_recursive(dataset_given_attribute_value, next_node_id)
+            
+            current_error = self.calculate_error(dataset_given_attribute_value, self.tree)
+            
+            pruned_tree = copy.deepcopy(self.tree)
+            pruned_tree.remove_node(next_node_id)
+
+            class_mode = dataset_given_attribute_value[self.class_column].mode()[0]
+
+            pruned_tree.add_node(next_node_id, type=str(NodeType.LEAF), value=class_mode, level=value_node["depth"]+1)
+            pruned_tree.add_edge(value_node_id, next_node_id)
+
+            new_error = self.calculate_error(dataset_given_attribute_value, pruned_tree)
+            if new_error < current_error:
+                self.tree = pruned_tree
+
+    def calculate_error(self, dataset: pd.DataFrame, tree: nx.DiGraph):
+        incorrect_predictions = 0
+        for index, sample in dataset.iterrows():
+            if self.classify_from_tree(sample, tree) != sample[self.class_column]:
+                incorrect_predictions += 1
+        
+        return incorrect_predictions/len(dataset)
+        
+        
