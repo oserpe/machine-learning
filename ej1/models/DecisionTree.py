@@ -276,7 +276,6 @@ class DecisionTree:
         
         return incorrect_predictions/len(dataset)
         
-        
 
     def test(self, dataset: pd.DataFrame, prediction_column: str) -> pd.DataFrame:
         dataset[prediction_column] = dataset.apply(self.classify, axis=1)

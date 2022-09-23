@@ -155,13 +155,13 @@ class Metrics:
     @staticmethod
     def plot_confusion_matrix_heatmap(cf_matrix, predicted_title="Predicted label", actual_title="Truth label", plot_title=""):
         ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='d')
-        ax.set_xlabel(predicted_title, fontsize=15)
-        ax.set_ylabel(actual_title, fontsize=15)
+        ax.set_xlabel(predicted_title, fontsize=12)
+        ax.set_ylabel(actual_title, fontsize=12)
         plt.yticks(rotation=0)
         ax.xaxis.tick_top()  # x axis on top
         ax.xaxis.set_label_position('top')
         plt.rcParams["figure.figsize"] = (8, 6)
-        plt.title(plot_title, fontsize=20)
+        plt.title(plot_title, fontsize=15)
         plt.show()
 
     # https://arxiv.org/pdf/2008.05756#:~:text=Accuracy%20is%20one%20of%20the,computed%20from%20the%20confusion%20matrix.&text=The%20formula%20of%20the%20Accuracy,confusion%20matrix%20at%20the%20denominator.

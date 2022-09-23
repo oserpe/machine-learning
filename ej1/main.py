@@ -1,3 +1,4 @@
+from turtle import title
 import pandas as pd
 
 from .models.TreeType import TreeType
@@ -21,28 +22,38 @@ def categorize_data_with_equal_width(data_df: pd.DataFrame, columns: dict[str, i
 
     return data_df
 
-# def main_random_forest(train_dataset, test_dataset, class_column):
-#     # create random forest
-#     random_forest = RandomForest()
+def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_estimators: int = 10, samples_per_bag_frac: float = 1):
+    tree = RandomForest(n_estimators, samples_per_bag_frac)
 
-#     # train random forest
-#     random_forest.train(train_dataset, class_column)
+    # drop continous columns
+    continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
+    dataset = dataset.drop(continuous_columns, axis=1)
 
-#     # test random forest
-#     prediction_column = "Classification"
-#     results = random_forest.test(test_dataset, prediction_column)
+    class_column = "Creditability"
 
-#     # print metrics
-#     # get the prediction column values
-#     y_predictions = results[prediction_column].values.tolist()
+    # get train and test datasets
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.1)
 
-#     # get the class column values
-#     y = list(map(str,results[class_column].values.tolist()))
 
-#     labels = ["0", "1"]
+    tree.train(train_dataset, class_column)
 
-#     cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
-#     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    # test 
+    prediction_column = "Classification"
+    results_per_tree = tree.test_every_tree(test_dataset, prediction_column)
+
+    labels = ["0", "1"]
+
+    # print metrics per tree
+    for index, results in enumerate(results_per_tree):
+        # get the prediction column values
+        y_predictions = results[prediction_column].values.tolist()
+
+        # get the class column values
+        y = list(map(str,results[class_column].values.tolist()))
+
+
+        cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+        Metrics.plot_confusion_matrix_heatmap(cf_matrix, plot_title=f"Confusion matrix for tree {index+1}")
 
 
 def main(dataset: pd.DataFrame, tree_type: TreeType):
@@ -84,7 +95,8 @@ if __name__ == "__main__":
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
     tree_type = TreeType.RANDOM_FOREST
-    main(data_df, tree_type)
+    # main(data_df, tree_type)
+    main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
 
     # categorical_columns = {
     #     "Duration of Credit (month)": 12,

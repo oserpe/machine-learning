@@ -38,3 +38,8 @@ class RandomForest:
 
         return dataset
         
+    def test_every_tree(self, dataset:pd.DataFrame, prediction_column: str) -> list[pd.DataFrame]:
+        results = []
+        for tree in self.trees:
+            results.append(tree.test(dataset, prediction_column))
+        return results
