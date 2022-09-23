@@ -8,10 +8,13 @@ class NodeType(Enum):
 class Node():
     id = -1
 
-    def __init__(self, node_type: NodeType, value=None, depth=0):
-        Node.id = Node.id+1
-        self.id = Node.id
-
+    def __init__(self, node_type: NodeType, value=None, depth=0, id=None):
+        if id is None:
+            Node.id = Node.id+1
+            self.id = Node.id
+        else:
+            self.id = id
+            
         self.node_type = node_type
         self.value = value
         self.depth = depth

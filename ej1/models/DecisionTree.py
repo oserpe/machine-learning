@@ -73,18 +73,20 @@ class DecisionTree:
     def get_all_attribute_values(self, dataset: pd.DataFrame):
         return {attribute: self.get_attribute_values(dataset, attribute) for attribute in dataset.columns}
 
-    def create_and_set_node(self, node_type: NodeType, value=None, depth=0):
-        node = Node(node_type, value, depth)
-        self.tree.add_node(node.id, label=str(node), level=depth)
+    def create_and_set_node(self, node_type: NodeType, value=None, depth=0, id=None, tree=None):
+        node = Node(node_type=node_type, value=value, depth=depth, id=id)
+        target_tree = tree if tree else self.tree
+        target_tree.add_node(node.id, label=str(node), level=depth)
         properties = {
             "node_value": str(value),
             "node_id": node.id,
             "node_type": str(node_type),
+            "node_depth": depth
         }
-        nx.set_node_attributes(self.tree, {node.id: properties})
+        nx.set_node_attributes(target_tree, {node.id: properties})
         return node
-
-    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0, max_depth=math.inf):
+        
+    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
         # check if class column value is unique
         class_values = dataset[self.class_column].unique()
         if len(class_values) == 1:
@@ -159,7 +161,7 @@ class DecisionTree:
 
         return max_gain_attribute_node
 
-    def train(self, dataset: pd.DataFrame, class_column: str, max_depth=math.inf):
+    def train(self, dataset: pd.DataFrame, class_column: str):
         Node.id = -1
         self.class_column = class_column
 
@@ -170,8 +172,7 @@ class DecisionTree:
 
         self.tree = nx.DiGraph()
 
-        self.build_tree_recursive(
-            dataset, attributes, depth=0, max_depth=max_depth)
+        self.build_tree_recursive(dataset, attributes, depth=0)
 
     def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
 
@@ -196,7 +197,7 @@ class DecisionTree:
 
         g.from_nx(self.tree)
 
-        g.show('tree3.html')
+        g.show('tree.html')
 
 
     def get_root_node(self):
@@ -219,7 +220,6 @@ class DecisionTree:
         # for every other attribute, get the next node until we reach a leaf node
         while current_node["node_type"] != str(NodeType.LEAF):
             current_node = self.get_next_node(current_node, attribute_value, tree)
-
             if current_node["node_type"] == str(NodeType.LEAF):
                 return int(current_node["node_value"])
 
@@ -235,7 +235,6 @@ class DecisionTree:
 
     def prune_recursive(self, dataset: pd.DataFrame, node_id: int):
         # BOTTOM-UP PRUNING
-
         current_node = self.tree.nodes[node_id]
 
         if current_node["node_type"] == str(NodeType.LEAF):
@@ -243,31 +242,33 @@ class DecisionTree:
 
         current_attribute = current_node["node_value"]
 
-        attribute_value_nodes = self.tree.successors()
+        attribute_value_nodes = self.tree.successors(node_id)
 
-        # iterate over attribute value nodes 
+        # iterate over attribute value nodes to prune next attributes
         for value_node_id in attribute_value_nodes:
             value_node = self.tree.nodes[value_node_id]
             
             next_node_id = list(self.tree.successors(value_node_id))[0]
             # next node is either a leaf node or an attribute node (only one)
+            dataset_given_attribute_value = dataset[dataset[current_attribute] == int(value_node["node_value"])]
+            if len(dataset_given_attribute_value) != 0:
+                self.prune_recursive(dataset_given_attribute_value, next_node_id)
 
-            dataset_given_attribute_value = dataset[(dataset[current_attribute] == value_node["node_value"])]
-            self.prune_recursive(dataset_given_attribute_value, next_node_id)
-            
-            current_error = self.calculate_error(dataset_given_attribute_value, self.tree)
-            
-            pruned_tree = copy.deepcopy(self.tree)
-            pruned_tree.remove_node(next_node_id)
+        current_error = self.calculate_error(dataset, self.tree)
+        
+        pruned_tree = copy.deepcopy(self.tree)
+        pruned_tree.remove_node(next_node_id)
 
-            class_mode = dataset_given_attribute_value[self.class_column].mode()[0]
+        class_mode = dataset[self.class_column].mode()[0]
 
-            pruned_tree.add_node(next_node_id, type=str(NodeType.LEAF), value=class_mode, level=value_node["depth"]+1)
-            pruned_tree.add_edge(value_node_id, next_node_id)
+        depth = value_node["node_depth"]+1
+        self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode, depth=depth, id=next_node_id, tree=pruned_tree)
+        pruned_tree.add_edge(value_node_id, next_node_id)
 
-            new_error = self.calculate_error(dataset_given_attribute_value, pruned_tree)
-            if new_error < current_error:
-                self.tree = pruned_tree
+        new_error = self.calculate_error(dataset, pruned_tree)
+        if new_error < current_error:
+            self.tree = pruned_tree
+            print("PRUNED!")
 
     def calculate_error(self, dataset: pd.DataFrame, tree: nx.DiGraph):
         incorrect_predictions = 0

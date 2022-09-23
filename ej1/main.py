@@ -64,13 +64,16 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     class_column = "Creditability"
 
     # get train and test datasets
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.7)
 
 
     tree.train(train_dataset, class_column)
 
     if(tree_type == TreeType.DECISION_TREE):
         tree.draw()
+
+    # prune
+    tree.prune(test_dataset)
 
     # test 
     prediction_column = "Classification"
@@ -93,9 +96,9 @@ if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
-    tree_type = TreeType.RANDOM_FOREST
+    #main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
+    tree_type = TreeType.DECISION_TREE
     main(data_df, tree_type)
-    # main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
 
     # categorical_columns = {
     #     "Duration of Credit (month)": 12,
