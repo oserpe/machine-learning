@@ -41,7 +41,7 @@ def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_es
     prediction_column = "Classification"
     results_per_tree = tree.test_every_tree(test_dataset, prediction_column)
 
-    labels = ["0", "1"]
+    labels = [0, 1]
 
     # print metrics per tree
     for index, results in enumerate(results_per_tree):
@@ -49,8 +49,7 @@ def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_es
         y_predictions = results[prediction_column].values.tolist()
 
         # get the class column values
-        y = list(map(str,results[class_column].values.tolist()))
-
+        y = results[class_column].values.tolist()
 
         cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
         Metrics.plot_confusion_matrix_heatmap(cf_matrix, plot_title=f"Confusion matrix for tree {index+1}")
@@ -82,9 +81,9 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     y_predictions = results[prediction_column].values.tolist()
 
     # get the class column values
-    y = list(map(str,results[class_column].values.tolist()))
+    y = results[class_column].values.tolist()
 
-    labels = ["0", "1"]
+    labels = [0, 1]
 
     cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
@@ -95,8 +94,8 @@ if __name__ == "__main__":
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
     tree_type = TreeType.RANDOM_FOREST
-    # main(data_df, tree_type)
-    main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
+    main(data_df, tree_type)
+    # main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
 
     # categorical_columns = {
     #     "Duration of Credit (month)": 12,

@@ -84,7 +84,7 @@ class DecisionTree:
         nx.set_node_attributes(self.tree, {node.id: properties})
         return node
 
-    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
+    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0, max_depth=math.inf):
         # check if class column value is unique
         class_values = dataset[self.class_column].unique()
         if len(class_values) == 1:
@@ -159,7 +159,7 @@ class DecisionTree:
 
         return max_gain_attribute_node
 
-    def train(self, dataset: pd.DataFrame, class_column: str):
+    def train(self, dataset: pd.DataFrame, class_column: str, max_depth=math.inf):
         Node.id = -1
         self.class_column = class_column
 
@@ -170,7 +170,8 @@ class DecisionTree:
 
         self.tree = nx.DiGraph()
 
-        self.build_tree_recursive(dataset, attributes)
+        self.build_tree_recursive(
+            dataset, attributes, depth=0, max_depth=max_depth)
 
     def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
 
@@ -220,12 +221,12 @@ class DecisionTree:
             current_node = self.get_next_node(current_node, attribute_value, tree)
 
             if current_node["node_type"] == str(NodeType.LEAF):
-                return current_node["node_value"]
+                return int(current_node["node_value"])
 
             current_attribute = current_node["node_value"]
             attribute_value = sample[current_attribute]
 
-        return current_node["node_value"]
+        return int(current_node["node_value"])
 
 
     def prune(self, dataset: pd.DataFrame):

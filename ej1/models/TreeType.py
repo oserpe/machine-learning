@@ -11,4 +11,4 @@ class TreeType(Enum):
         if self == TreeType.DECISION_TREE:
             return DecisionTree()
         elif self == TreeType.RANDOM_FOREST:
-            return RandomForest(n_estimators=50)
+            return RandomForest(n_estimators=3)
