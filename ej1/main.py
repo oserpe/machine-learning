@@ -73,7 +73,7 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
         tree.draw()
 
     # prune
-    tree.prune(test_dataset)
+    # tree.prune(test_dataset)
 
     # test 
     prediction_column = "Classification"

@@ -94,7 +94,7 @@ class DecisionTree:
             leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_values[0], depth=depth)
             return leaf_node
 
-        elif len(attributes) == 0:
+        elif len(attributes) == 0 or depth == self.max_depth or depth == (self.max_depth - 1) or len(dataset) < self.min_samples_split:
             print("No remaining attributes...")
             print("Choosing most common class value...")
             
