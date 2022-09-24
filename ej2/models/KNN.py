@@ -20,25 +20,18 @@ class KNN:
         # standarize values that will be used by KNN
         numerical_value_columns = [col for col in self.train_dataset.columns if col != self.class_column]
         std_train_dataset_without_class[numerical_value_columns] = \
-            StandardScaler().fit_transform(std_train_dataset_without_class[numerical_value_columns])
+                    StandardScaler().fit_transform(std_train_dataset_without_class[numerical_value_columns])
 
         # Once it is standarized with the train data, get the std sample
         std_sample_df = std_train_dataset_without_class.tail(1)
-        std_train_dataset_without_class.drop(std_train_dataset_without_class.tail(1).index)
+        std_train_dataset_without_class = std_train_dataset_without_class.drop(std_sample_df.index)
 
         distances = []
-
         for i in range(len(std_train_dataset_without_class)):
-            distances.append((self.get_euclidean_distance(std_train_dataset_without_class.iloc[[i]], std_sample_df), i))
+            distances.append((self.get_euclidean_distance(std_train_dataset_without_class.iloc[[i]], std_sample_df), std_train_dataset_without_class.iloc[[i]].index[0]))
 
         # Calculamos los k vecinos más cercanos
-        k_nearest_neighbors_indexes = map(lambda x: x[1], sorted(
-            distances, key=lambda distance: distance[0])[:self.k])
+        k_nearest_neighbors_indexes = list(map(lambda x: x[1], sorted(
+            distances, key=lambda distance: distance[0])[:self.k]))
 
-        print(list(k_nearest_neighbors_indexes))
-        print(self.train_dataset.loc[[197]])
-        print(self.train_dataset.loc[[230]])
-
-        print(self.train_dataset.loc[k_nearest_neighbors_indexes][self.class_column])
-        
         return self.train_dataset.loc[k_nearest_neighbors_indexes][self.class_column].value_counts()

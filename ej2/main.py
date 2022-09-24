@@ -9,7 +9,7 @@ def main(dataset):
     knn = KNN(dataset, class_column, 15)
     other = dataset.iloc[[0]]
     other = other.drop([class_column], axis=1)
-    for i in [0,50,100,150,200]:
+    for i in [0,50,100,150]:
         sample = dataset.iloc[[i]]
         dataset.drop([i], inplace=True)
         sample_without_class = sample.drop([class_column], axis=1)
