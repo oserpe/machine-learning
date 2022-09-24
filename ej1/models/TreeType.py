@@ -9,6 +9,6 @@ class TreeType(Enum):
 
     def get_tree(self):
         if self == TreeType.DECISION_TREE:
-            return DecisionTree(max_depth=3)
+            return DecisionTree()
         elif self == TreeType.RANDOM_FOREST:
             return RandomForest(n_estimators=3)

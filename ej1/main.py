@@ -64,33 +64,37 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     class_column = "Creditability"
 
     # get train and test datasets
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.7)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
 
-    tree.train(train_dataset, class_column)
+    # tree.train(train_dataset, class_column)
 
-    if(tree_type == TreeType.DECISION_TREE):
-        tree.draw()
+    # if(tree_type == TreeType.DECISION_TREE):
+    #     tree.draw()
 
-    # prune
-    # tree.prune(test_dataset)
+    # # prune
+    # # tree.prune(test_dataset)
 
-    # test 
+    # # test 
     prediction_column = "Classification"
-    results = tree.test(test_dataset, prediction_column)
+    # results = tree.test(test_dataset, prediction_column)
 
-    # print metrics
-    # get the prediction column values
-    y_predictions = results[prediction_column].values.tolist()
+    # # print metrics
+    # # get the prediction column values
+    # y_predictions = results[prediction_column].values.tolist()
 
-    # get the class column values
-    y = results[class_column].values.tolist()
+    # # get the class column values
+    # y = results[class_column].values.tolist()
 
-    labels = [0, 1]
+    # labels = [0, 1]
 
-    cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
-    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    # cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
+    # print s-precision plot
+    results = tree.s_precision_per_node_count(train_dataset, test_dataset, class_column, prediction_column)
+    print(results)
+    tree.plot_precision_per_node_count(results)
 
 if __name__ == "__main__":
     data_df = pd.read_csv(
