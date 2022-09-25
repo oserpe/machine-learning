@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5b04a6424d8b892cc6a3677773b4db7969f91478107bc0df019ccb8dd48a5bf3"
+            "sha256": "c7da02b9db6d68f80e3908cc7654a0d10d4c5c119042bf1ffbab8c9ba7567654"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -130,10 +130,10 @@
         },
         "executing": {
             "hashes": [
-                "sha256:550d581b497228b572235e633599133eeee67073c65914ca346100ad56775349",
-                "sha256:98daefa9d1916a4f0d944880d5aeaf079e05585689bebd9ff9b32e31dd5e1017"
+                "sha256:2c2c07d1ec4b2d8f9676b25170f1d8445c0ee2eb78901afb075a4b8d83608c6a",
+                "sha256:4a6d96ba89eb3dcc11483471061b42b9006d8c9f81c584dd04246944cd022530"
             ],
-            "version": "==1.0.0"
+            "version": "==1.1.0"
         },
         "fonttools": {
             "hashes": [
@@ -591,10 +591,10 @@
         },
         "pyvis": {
             "hashes": [
-                "sha256:29b94d0a10a01ac790d262318680369baa9e5eb8524c355758f1c3799f0c3965"
+                "sha256:7b83d93f43cfe5627262cb6571cb8ba8ba189dbcb6a86f4ab901e9d958ecf1ee"
             ],
             "index": "pypi",
-            "version": "==0.2.1"
+            "version": "==0.3.0"
         },
         "scikit-learn": {
             "hashes": [
@@ -674,10 +674,10 @@
         },
         "stack-data": {
             "hashes": [
-                "sha256:66d2ebd3d7f29047612ead465b6cae5371006a71f45037c7e2507d01367bce3b",
-                "sha256:715c8855fbf5c43587b141e46cc9d9339cc0d1f8d6e0f98ed0d01c6cb974e29f"
+                "sha256:5120731a18ba4c82cefcf84a945f6f3e62319ef413bfc210e32aca3a69310ba2",
+                "sha256:95eb784942e861a3d80efd549ff9af6cf847d88343a12eb681d7157cfcb6e32b"
             ],
-            "version": "==0.5.0"
+            "version": "==0.5.1"
         },
         "threadpoolctl": {
             "hashes": [
@@ -703,5 +703,30 @@
             "version": "==0.2.5"
         }
     },
-    "develop": {}
+    "develop": {
+        "autopep8": {
+            "hashes": [
+                "sha256:6f09e90a2be784317e84dc1add17ebfc7abe3924239957a37e5040e27d812087",
+                "sha256:ca9b1a83e53a7fad65d731dc7a2a2d50aa48f43850407c59f6a1a306c4201142"
+            ],
+            "index": "pypi",
+            "version": "==1.7.0"
+        },
+        "pycodestyle": {
+            "hashes": [
+                "sha256:2c9607871d58c76354b697b42f5d57e1ada7d261c261efac224b664affdc5785",
+                "sha256:d1735fc58b418fd7c5f658d28d943854f8a849b01a5d0a1e6f3f3fdd0166804b"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==2.9.1"
+        },
+        "toml": {
+            "hashes": [
+                "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
+                "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
+            ],
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==0.10.2"
+        }
+    }
 }

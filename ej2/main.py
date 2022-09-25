@@ -44,7 +44,7 @@ def main(dataset):
     y_train = train_dataset[[class_column]]
 
     # load the model
-    knn = KNN(x_train, y_train, k_neighbors=100, weighted=True)
+    knn = KNN(x_train, y_train, k_neighbors=20, weighted=True)
 
     x_test = test_dataset.drop(class_column, axis=1)
     y_test = test_dataset[[class_column]]
@@ -54,7 +54,7 @@ def main(dataset):
 
     # get confusion matrix
     y_predictions = results[knn.predicted_class_column_name].values.tolist()
-    y = y_test.values.tolist()
+    y = y_test[knn.class_column].values.tolist()
     labels = [1, 2, 3, 4, 5]
 
     print("Y predictions:")
@@ -99,9 +99,6 @@ if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej2/dataset/reviews_sentiment.csv", header=0, sep=';')
 
-    # TODO: CAMBIAR CRITERIO PARA REVIEWS CON DATOS FALTANTES?
-    data_df.dropna(inplace=True)
-
     data_df.loc[data_df["titleSentiment"] == "positive", "titleSentiment"] = 1
     data_df.loc[data_df["titleSentiment"] == "negative", "titleSentiment"] = -1
     data_df.loc[data_df["textSentiment"] == "positive", "textSentiment"] = 1
@@ -111,5 +108,26 @@ if __name__ == "__main__":
     text_columns = ["Review Title", "Review Text"]
     numerical_data_df = data_df.drop(text_columns, axis=1)
 
-    main(numerical_data_df)
-    # main_k_fold(numerical_data_df)
+    class_column = "titleSentiment"
+
+    complete_df = numerical_data_df[~numerical_data_df.isna().any(axis=1)]
+    incomplete_df = numerical_data_df[numerical_data_df.isna().any(axis=1)]
+
+    # get train dataset x and y values
+    x_train = complete_df.drop(class_column, axis=1)
+    y_train = complete_df[[class_column]]
+
+    # load the model
+    knn = KNN(x_train, y_train, k_neighbors=20, weighted=True, classes_column_name=class_column)
+
+    # get incomplete without NaN column
+    incomplete_df = incomplete_df.drop(class_column, axis=1)
+
+    # add predicted class column
+    incomplete_df[class_column] = knn.test(incomplete_df)[knn.predicted_class_column_name]
+
+    # concat complete and incomplete
+    complete_df = pd.concat([complete_df, incomplete_df], axis=0)
+
+    main(complete_df)
+    # main_k_fold(complete_df)
