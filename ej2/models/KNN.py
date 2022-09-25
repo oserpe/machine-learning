@@ -5,18 +5,27 @@ import pandas as pd
 
 
 class KNN:
-    def __init__(self, X: pd.DataFrame, Y: pd.DataFrame, k_neighbors: int, weighted: bool):
+    def __init__(self, X: pd.DataFrame, Y: pd.DataFrame, k_neighbors: int, weighted: bool, classes = [1,2,3,4,5], classes_column_name = "Star Rating", predicted_class_column_name = "Classification"):
         self.X = X
         self.Y = Y
-        self.class_column = Y.columns[0]
+        self.class_column = classes_column_name # Y.columns[0]
         self.k_neighbors = k_neighbors
         if weighted:
             self.get_ranked_classes = self.get_ranked_classes_by_weight
         else:
             self.get_ranked_classes = self.get_ranked_classes_by_appearances
 
+        self.classes = classes
+        self.classes_column_name = classes_column_name
+        self.predicted_class_column_name = predicted_class_column_name
+
     def get_euclidean_distance(self, source: pd.DataFrame, dest: pd.DataFrame) -> float:
         return np.linalg.norm(source.values - dest.values, axis=1)
+
+    # Dummy method, only to be used by Metrics class
+    def train(self, dataset: pd.DataFrame):
+        self.X = dataset.drop(self.class_column, axis=1)
+        self.Y = dataset[[self.class_column]]
 
     def classify(self, sample):
         # add sample to dataset before standardizing
@@ -91,3 +100,8 @@ class KNN:
             .groupby(self.class_column).size().sort_values(ascending=False)
 
         return classes_by_appearances_sorted
+
+    def test(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        dataset_copy = dataset.copy()
+        dataset_copy[self.predicted_class_column_name] = dataset.apply(self.classify, axis=1)
+        return dataset_copy

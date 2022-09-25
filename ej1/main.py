@@ -67,8 +67,6 @@ def main_k_fold(dataset: pd.DataFrame):
     x = dataset.drop(tree.classes_column_name, axis=1)
 
     # get dataset dataframe with only class column
-
-
     y = dataset[[tree.classes_column_name]]
 
     # call k-fold cross validation

@@ -217,6 +217,10 @@ class Metrics:
         denominator = numerator + \
             Metrics.get_fp_for_class(cf_matrix, label) + \
             Metrics.get_fn_for_class(cf_matrix, label)
+        
+        if denominator == 0:
+            return 0
+
         return numerator / denominator
 
     @staticmethod
@@ -224,6 +228,10 @@ class Metrics:
         # TP / (TP + FP)
         numerator = Metrics.get_tp_for_class(cf_matrix, label)
         denominator = numerator + Metrics.get_fp_for_class(cf_matrix, label)
+
+        if denominator == 0:
+            return 0
+
         return numerator / denominator
 
     @staticmethod
@@ -231,6 +239,10 @@ class Metrics:
         # TP / (TP + FN)
         numerator = Metrics.get_tp_for_class(cf_matrix, label)
         denominator = numerator + Metrics.get_fn_for_class(cf_matrix, label)
+
+        if denominator == 0:
+            return 0
+
         return numerator / denominator
 
     @staticmethod
@@ -238,6 +250,10 @@ class Metrics:
         # 2 * Precision * Recall / (Precision + Recall)
         precision = Metrics.get_precision_for_class(cf_matrix, label)
         recall = Metrics.get_recall_for_class(cf_matrix, label)
+
+        if precision + recall == 0:
+            return 0
+
         return 2 * precision * recall / (precision + recall)
 
     @staticmethod
@@ -250,6 +266,10 @@ class Metrics:
         # FP / (FP + TN)
         numerator = Metrics.get_fp_for_class(cf_matrix, label)
         denominator = numerator + Metrics.get_tn_for_class(cf_matrix, label)
+
+        if denominator == 0:
+            return 0
+            
         return numerator / denominator
 
     @staticmethod
