@@ -63,6 +63,15 @@ def main(dataset):
     cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
+    # get metrics
+    metrics, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
+
+    print("Metrics:")
+    print(metrics)
+
+    # save to csv
+    metrics_df.to_csv("./machine-learning/ej2/dump/metrics.csv")
+
 
     # X = dataset.drop(class_column, axis=1)
     # Y = dataset[[class_column]]
@@ -99,5 +108,5 @@ if __name__ == "__main__":
     text_columns = ["Review Title", "Review Text"]
     numerical_data_df = data_df.drop(text_columns, axis=1)
 
-    # main(numerical_data_df)
-    main_k_fold(numerical_data_df)
+    main(numerical_data_df)
+    # main_k_fold(numerical_data_df)
