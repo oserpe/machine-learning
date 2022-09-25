@@ -62,7 +62,8 @@ class KNN:
         return classes_by_appearances_sorted.iloc[[0]].index[0]
 
     def get_K_classes_sorted_by_weight(self, k_nearest_neighbors_indexes, k, distances):
-        zero_distance_neighbours = list(filter(lambda x: x[0] == 0, distances))
+        zero_distance_neighbours = list(map(lambda x: x[1], 
+            list(filter(lambda x: x[0] == 0, distances))))
         if len(zero_distance_neighbours) > 0:
             # If there are neighbours with zero distance, return the class of the most popular between them
             return self.get_K_classes_sorted_by_appearances(zero_distance_neighbours)
