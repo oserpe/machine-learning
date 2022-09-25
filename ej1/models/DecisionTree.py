@@ -61,10 +61,12 @@ def information_gain(dataset, parent_entropy, attribute_column, attribute_values
     return parent_entropy - children_entropy
 
 class DecisionTree:
-    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1):
+    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes_column_name = "Creditability", predicted_class_column_name = "Classification"):
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
+        self.classes_column_name = classes_column_name
+        self.predicted_class_column_name = predicted_class_column_name
         # TODO: define constraints
 
     def get_attribute_values(self, dataset: pd.DataFrame, attribute_name):
@@ -92,7 +94,7 @@ class DecisionTree:
     def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
         # print(f"Building tree at depth {self.max_depth}")
         # check if class column value is unique
-        class_values = dataset[self.class_column].unique()
+        class_values = dataset[self.classes_column_name].unique()
         if len(class_values) == 1:
             # return leaf node with class value
             leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_values[0], depth=depth)
@@ -102,7 +104,7 @@ class DecisionTree:
             # print("No remaining attributes...")
             # print("Choosing most common class value...")
             
-            class_mode = dataset[self.class_column].mode()[0]
+            class_mode = dataset[self.classes_column_name].mode()[0]
 
             # print(f"Most common class value: {class_mode}")
             
@@ -111,7 +113,7 @@ class DecisionTree:
             return leaf_node
 
         parent_probabilities = calculate_probabilities_by_class(
-            dataset, self.class_column, class_values)
+            dataset, self.classes_column_name, class_values)
 
         parent_entropy = shannon_entropy(parent_probabilities.values())
 
@@ -122,7 +124,7 @@ class DecisionTree:
 
         for attribute in attributes:
             attribute_values = self.values_by_attribute[attribute]
-            attribute_gain = information_gain(dataset, parent_entropy, attribute, attribute_values, self.class_column,
+            attribute_gain = information_gain(dataset, parent_entropy, attribute, attribute_values, self.classes_column_name,
                                               class_values)
                 
             if attribute_gain > max_gain:
@@ -141,7 +143,7 @@ class DecisionTree:
             if len(dataset_by_attribute_value) == 0:
 
                 # print("No remaining samples...\nChoosing most common class value...")
-                class_mode = dataset[self.class_column].mode()[0]
+                class_mode = dataset[self.classes_column_name].mode()[0]
 
                 # print(f"Most common class value: {class_mode}")
 
@@ -164,14 +166,13 @@ class DecisionTree:
 
         return max_gain_attribute_node
 
-    def train(self, dataset: pd.DataFrame, class_column: str):
+    def train(self, dataset: pd.DataFrame):
         Node.id = -1
-        self.class_column = class_column
 
         self.values_by_attribute = self.get_all_attribute_values(
-            dataset[dataset.columns.drop(class_column)])
+            dataset[dataset.columns.drop(self.classes_column_name)])
 
-        attributes = dataset.columns.drop(class_column).tolist()
+        attributes = dataset.columns.drop(self.classes_column_name).tolist()
 
         self.tree = nx.DiGraph()
         
@@ -262,7 +263,7 @@ class DecisionTree:
         pruned_tree = copy.deepcopy(self.tree)
         pruned_tree.remove_node(next_node_id)
 
-        class_mode = dataset[self.class_column].mode()[0]
+        class_mode = dataset[self.classes_column_name].mode()[0]
 
         depth = value_node["node_depth"]+1
         self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode, depth=depth, id=next_node_id, tree=pruned_tree)
@@ -276,21 +277,21 @@ class DecisionTree:
     def calculate_error(self, dataset: pd.DataFrame, tree: nx.DiGraph):
         incorrect_predictions = 0
         for index, sample in dataset.iterrows():
-            if self.classify_from_tree(sample, tree) != sample[self.class_column]:
+            if self.classify_from_tree(sample, tree) != sample[self.classes_column_name]:
                 incorrect_predictions += 1
         
         return incorrect_predictions/len(dataset)
         
 
-    def test(self, dataset: pd.DataFrame, prediction_column: str) -> pd.DataFrame:
+    def test(self, dataset: pd.DataFrame) -> pd.DataFrame:
         dataset_copy = dataset.copy()
-        dataset_copy[prediction_column] = dataset.apply(self.classify, axis=1)
+        dataset_copy[self.predicted_class_column_name] = dataset.apply(self.classify, axis=1)
         return dataset_copy
 
-    def s_precision(self, dataset: pd.DataFrame, prediction_column: str) -> float:
-        return (dataset[prediction_column] == dataset[self.class_column]).sum() / len(dataset)
+    def s_precision(self, dataset: pd.DataFrame) -> float:
+        return (dataset[self.predicted_class_column_name] == dataset[self.classes_column_name]).sum() / len(dataset)
 
-    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, class_column: str, prediction_column: str, initial_depth = 2, max_depth = 20) -> dict:
+    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth = 2, max_depth = 20) -> dict:
         results = {}
         for depth in range(initial_depth, max_depth + 1, 2):
 
@@ -299,23 +300,23 @@ class DecisionTree:
             self.min_samples_split = -1
 
             # build tree
-            self.train(train_dataset, class_column)
+            self.train(train_dataset)
 
             # test with train dataset
-            train_dataset_predictions = self.test(train_dataset, prediction_column)
+            train_dataset_predictions = self.test(train_dataset)
 
             # test with test dataset
-            test_dataset_predictions = self.test(test_dataset, prediction_column)
+            test_dataset_predictions = self.test(test_dataset)
 
             # get number of nodes
             node_count = self.count_nodes()
             print(f'Node count: {node_count} for depth {depth}')
 
             # get s-precision for train predictions
-            train_s_precision = self.s_precision(train_dataset_predictions, prediction_column)
+            train_s_precision = self.s_precision(train_dataset_predictions)
 
             # get s-precision for test predictions
-            test_s_precision = self.s_precision(test_dataset_predictions, prediction_column)
+            test_s_precision = self.s_precision(test_dataset_predictions)
 
             # add to results
             if node_count not in results:

@@ -55,19 +55,22 @@ def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_es
         Metrics.plot_confusion_matrix_heatmap(cf_matrix, plot_title=f"Confusion matrix for tree {index+1}")
 
 
+def main_k_fold(dataset: pd.DataFrame):
+     tree = DecisionTree()
+     
+
+
 def main(dataset: pd.DataFrame, tree_type: TreeType):
     tree = tree_type.get_tree()
     # drop continous columns
     continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
     dataset = dataset.drop(continuous_columns, axis=1)
 
-    class_column = "Creditability"
-
     # get train and test datasets
     train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
 
-    # tree.train(train_dataset, class_column)
+    # tree.train(train_dataset)
 
     # if(tree_type == TreeType.DECISION_TREE):
     #     tree.draw()
@@ -76,15 +79,14 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # # tree.prune(test_dataset)
 
     # # test 
-    prediction_column = "Classification"
-    # results = tree.test(test_dataset, prediction_column)
+    # results = tree.test(test_dataset)
 
     # # print metrics
     # # get the prediction column values
-    # y_predictions = results[prediction_column].values.tolist()
+    # y_predictions = results[tree.predicted_class_column_name].values.tolist()
 
     # # get the class column values
-    # y = results[class_column].values.tolist()
+    # y = results[tree.classes_column_name].values.tolist()
 
     # labels = [0, 1]
 
@@ -92,9 +94,10 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # print s-precision plot
-    results = tree.s_precision_per_node_count(train_dataset, test_dataset, class_column, prediction_column)
+    results = tree.s_precision_per_node_count(train_dataset, test_dataset)
     print(results)
     tree.plot_precision_per_node_count(results)
+
 
 if __name__ == "__main__":
     data_df = pd.read_csv(
