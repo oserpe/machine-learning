@@ -10,7 +10,7 @@ from ..metrics import Metrics
 def categorize_data_with_equal_frequency(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
     for column, q in columns.items():
         data_df[column] = pd.qcut(
-            data_df[column], q=q, labels=False, duplicates='drop')
+            data_df[column], q=q, labels=False)
 
     return data_df
 
@@ -94,35 +94,35 @@ def main_k_fold(dataset: pd.DataFrame):
 def main(dataset: pd.DataFrame, tree_type: TreeType):
     tree = tree_type.get_tree()
     # drop continous columns
-    continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
-    dataset = dataset.drop(continuous_columns, axis=1)
+    # continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
+    # dataset = dataset.drop(continuous_columns, axis=1)
 
     # get train and test datasets
     train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
 
-    # tree.train(train_dataset)
+    tree.train(train_dataset)
 
-    # if(tree_type == TreeType.DECISION_TREE):
-    #     tree.draw()
+    if(tree_type == TreeType.DECISION_TREE):
+        tree.draw()
 
-    # # prune
-    # # tree.prune(test_dataset)
+    # prune
+    tree.prune(test_dataset)
 
-    # # test 
-    # results = tree.test(test_dataset)
+    # test 
+    results = tree.test(test_dataset)
 
-    # # print metrics
-    # # get the prediction column values
-    # y_predictions = results[tree.predicted_class_column_name].values.tolist()
+    # print metrics
+    # get the prediction column values
+    y_predictions = results[tree.predicted_class_column_name].values.tolist()
 
-    # # get the class column values
-    # y = results[tree.classes_column_name].values.tolist()
+    # get the class column values
+    y = results[tree.classes_column_name].values.tolist()
 
-    # labels = [0, 1]
+    labels = [0, 1]
 
-    # cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
-    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # print s-precision plot
     # results = tree.s_precision_per_node_count(train_dataset, test_dataset)
@@ -136,21 +136,19 @@ if __name__ == "__main__":
 
     #main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
     tree_type = TreeType.DECISION_TREE
-    # main(data_df, tree_type)
-    main_k_fold(data_df)
+    categorical_columns = {
+        # Quantity picked arbitrarily for this dataset taking into account that it separates the data in categories of the closest amount
+        "Duration of Credit (month)": 6,
+        "Credit Amount": 10,
+        "Age (years)": 7
+    }
 
-    # categorical_columns = {
-    #     "Duration of Credit (month)": 12,
-    #     "Credit Amount": 10,
-    #     "Age (years)": 10
-    # }
+    data_df = categorize_data_with_equal_frequency(
+        data_df, categorical_columns)
 
-    # print(data_df)
-
-    # data_df = categorize_data_with_equal_frequency(
-    #     data_df, categorical_columns)
-
-    # print(data_df)
     # print(data_df["Duration of Credit (month)"].value_counts())
     # print(data_df["Credit Amount"].value_counts())
     # print(data_df["Age (years)"].value_counts())
+
+    main(data_df, tree_type)
+    # main_k_fold(data_df)
