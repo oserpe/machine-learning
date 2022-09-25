@@ -8,7 +8,7 @@ def main(dataset):
 
     other = dataset.iloc[[0]]
     other = other.drop([class_column], axis=1)
-    for i in [0,50,100,150]:
+    for i in [0, 50, 100, 200]:
         sample = dataset.iloc[[i]]
         dataset.drop([i], inplace=True)
         knn = KNN(dataset, class_column, 2)
@@ -16,7 +16,7 @@ def main(dataset):
         sample_without_class = sample.drop([class_column], axis=1)
         print("sample: ")
         print(sample_without_class)
-        print("rating expected: ",knn.test(sample_without_class))
+        print("rating expected: ",knn.test(sample_without_class, weighted=True))
 
         # restore dataset
         dataset = pd.concat([dataset,sample])

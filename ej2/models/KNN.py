@@ -12,9 +12,10 @@ class KNN:
     def get_euclidean_distance(self, source: pd.DataFrame, dest: pd.DataFrame) -> float:
         return np.linalg.norm(source.values - dest.values, axis=1)
 
-    def test(self, sample):
+    def test(self, sample, weighted = False):
         std_train_dataset_without_class = self.train_dataset.drop([self.class_column], axis=1)
 
+        # add sample to dataset before standarizing
         std_train_dataset_without_class = pd.concat([std_train_dataset_without_class, sample], axis = 0, sort = False)
 
         # standarize values that will be used by KNN
@@ -31,16 +32,31 @@ class KNN:
         while k < len(std_train_dataset_without_class) and not class_found:
             distances = []
             for i in range(len(std_train_dataset_without_class)):
+                row = std_train_dataset_without_class.iloc[[i]]
+                distance = self.get_euclidean_distance(row, std_sample_df)
+
                 distances.append((
-                    self.get_euclidean_distance(std_train_dataset_without_class.iloc[[i]], std_sample_df),
-                    std_train_dataset_without_class.iloc[[i]].index[0])
-                )   # (distance, id)
+                    distance,
+                    row.index[0]
+                    ))   # (distance, id)
 
             k_nearest_neighbors_indexes = list(map(lambda x: x[1], sorted(
                 distances, key=lambda distance: distance[0])[:k]))
 
-            # Frequency of the classes of the k nearest neighbors ordered from highest to lowest
-            classes_by_appearances_sorted = self.train_dataset.loc[k_nearest_neighbors_indexes][self.class_column].value_counts()
+            if weighted:
+                # add inv_distance column before grouping
+                k_nearest_neighbors_inverse_distances = list(map(lambda x: 1/(x[0])**2, sorted(
+                    distances, key=lambda distance: distance[0])[:k]))
+                k_nearest_neighbors = self.train_dataset.loc[k_nearest_neighbors_indexes]
+                k_nearest_neighbors["inv_distance"] = k_nearest_neighbors_inverse_distances
+
+                classes_by_appearances_sorted = k_nearest_neighbors\
+                    .groupby(self.class_column)["inv_distance"].sum().sort_values(ascending=False)
+
+            else:
+                # Frequency of the classes of the k nearest neighbors ordered from highest to lowest without weight
+                classes_by_appearances_sorted = self.train_dataset.loc[k_nearest_neighbors_indexes]\
+                    .groupby(self.class_column).size().sort_values(ascending=False)
 
             # On tie, increase k and try again
             if len(classes_by_appearances_sorted) == 1 \
