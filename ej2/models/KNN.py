@@ -27,7 +27,9 @@ class KNN:
         self.X = dataset.drop(self.class_column, axis=1)
         self.Y = dataset[[self.class_column]]
 
-    def classify(self, sample):
+    def classify(self, sample: pd.Series):
+        sample = sample.to_frame().T
+
         # add sample to dataset before standardizing
         std_X = pd.concat(
             [self.X, sample], axis=0, sort=False)
@@ -79,7 +81,7 @@ class KNN:
                                             list(filter(lambda x: x[0] == 0, distances))))
         if len(zero_distance_neighbours) > 0:
             # If there are neighbours with zero distance, return the class of the most popular between them
-            return self.get_ranked_classes_by_appearances(zero_distance_neighbours)
+            return self.get_ranked_classes_by_appearances(zero_distance_neighbours, k, distances)
 
         # add inv_distance column before grouping
         k_nearest_neighbors_inverse_distances = list(map(lambda x: 1/(x[0])**2, sorted(

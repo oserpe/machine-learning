@@ -46,12 +46,15 @@ def main(dataset):
     # load the model
     knn = KNN(x_train, y_train, k_neighbors=100, weighted=True)
 
+    x_test = test_dataset.drop(class_column, axis=1)
+    y_test = test_dataset[[class_column]]
+
     # test the model
-    results = knn.test(test_dataset)
+    results = knn.test(x_test)
 
     # get confusion matrix
     y_predictions = results[knn.predicted_class_column_name].values.tolist()
-    y = results[knn.classes_column_name].values.tolist()
+    y = y_test.values.tolist()
     labels = [1, 2, 3, 4, 5]
 
     print("Y predictions:")
