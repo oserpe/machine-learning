@@ -139,6 +139,28 @@ class Metrics:
         return results, errors, k_metrics_per_class, average_metrics, std_metrics
 
     @staticmethod
+    def avg_and_std_metrics_to_csv(classes: list, avg_metrics, std_metrics, path = "./dump/metrics.csv"):
+        if path is None:
+            raise ValueError("Path cannot be None")
+
+        metrics_values = {}
+        DECIMALS_VALUE = 3
+        ERROR_SYMBOL = " ± "
+        for label in classes:
+            metrics_values[label] = {
+                'accuracy': str(round(avg_metrics['accuracy'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['accuracy'][label],DECIMALS_VALUE)),
+                'precision': str(round(avg_metrics['precision'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['precision'][label],DECIMALS_VALUE)),
+                'recall': str(round(avg_metrics['recall'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['recall'][label],DECIMALS_VALUE)),
+                'f1-score': str(round(avg_metrics['f1-score'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['f1-score'][label],DECIMALS_VALUE)),
+                'tp-rate': str(round(avg_metrics['tp-rate'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['tp-rate'][label],DECIMALS_VALUE)),
+                'fp-rate': str(round(avg_metrics['fp-rate'][label],DECIMALS_VALUE)) + ERROR_SYMBOL + str(round(std_metrics['fp-rate'][label],DECIMALS_VALUE)),
+            }
+
+        # Build a dataframe from the metrics dictionary
+        df = pd.DataFrame.from_dict(metrics_values, orient='index')
+        df.to_csv(path)
+
+    @staticmethod
     def error(predictions, y, uses_df=False):
         if uses_df:
             predictions = predictions.values

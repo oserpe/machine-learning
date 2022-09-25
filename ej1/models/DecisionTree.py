@@ -61,10 +61,11 @@ def information_gain(dataset, parent_entropy, attribute_column, attribute_values
     return parent_entropy - children_entropy
 
 class DecisionTree:
-    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes_column_name = "Creditability", predicted_class_column_name = "Classification"):
+    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes = [0, 1], classes_column_name = "Creditability", predicted_class_column_name = "Classification"):
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
+        self.classes = classes
         self.classes_column_name = classes_column_name
         self.predicted_class_column_name = predicted_class_column_name
         # TODO: define constraints

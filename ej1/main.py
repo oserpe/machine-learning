@@ -56,7 +56,40 @@ def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_es
 
 
 def main_k_fold(dataset: pd.DataFrame):
-     tree = DecisionTree()
+    tree = DecisionTree()
+
+    # drop continous columns
+    continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
+
+    dataset = dataset.drop(continuous_columns, axis=1)
+
+    # get dataset without class column
+    x = dataset.drop(tree.classes_column_name, axis=1)
+
+    # get dataset dataframe with only class column
+
+
+    y = dataset[[tree.classes_column_name]]
+
+    # call k-fold cross validation
+    results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
+    ), model=tree, x_column_names=x.columns, y_column_names=y.columns, k=5)
+
+    # print results
+    print("Results:")
+    print(results)
+
+    print("Metrics:")
+    print(metrics)
+
+    print("Average metrics:")
+    print(avg_metrics)
+
+    print("Standard deviation metrics:")
+    print(std_metrics)
+
+    # save to csv
+    Metrics.avg_and_std_metrics_to_csv(tree.classes, avg_metrics, std_metrics, path="./machine-learning/ej1/dump/avg_std_metrics.csv")
      
 
 
@@ -94,9 +127,9 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # print s-precision plot
-    results = tree.s_precision_per_node_count(train_dataset, test_dataset)
-    print(results)
-    tree.plot_precision_per_node_count(results)
+    # results = tree.s_precision_per_node_count(train_dataset, test_dataset)
+    # print(results)
+    # tree.plot_precision_per_node_count(results)
 
 
 if __name__ == "__main__":
@@ -105,7 +138,8 @@ if __name__ == "__main__":
 
     #main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
     tree_type = TreeType.DECISION_TREE
-    main(data_df, tree_type)
+    # main(data_df, tree_type)
+    main_k_fold(data_df)
 
     # categorical_columns = {
     #     "Duration of Credit (month)": 12,
