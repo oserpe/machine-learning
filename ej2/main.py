@@ -1,8 +1,29 @@
+from itertools import groupby
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 from .models.KNN import KNN
 from ..metrics import Metrics
+import matplotlib.pyplot as plt
+
+def create_rate_boxplot(dataset, class_column):
+    groupby_data_df = dataset.groupby(class_column)
+
+    classification = []
+    labels = []
+    for rate in groupby_data_df.groups.keys():
+        classification.append(groupby_data_df.get_group(
+            rate)['wordcount'].values)
+        labels.append(rate)
+
+    fig, axes = plt.subplots(figsize=(10, 5))
+    axes.boxplot(classification)
+    axes.set_xticks(range(1, len(labels) + 1), labels)
+    axes.set_title("Boxplot de cantidad de palabras por rate")
+
+    plt.show()
+
+    print(groupby_data_df.get_group(1)['wordcount'].mean())
 
 def main_k_fold(dataset):
     # load the model
@@ -127,7 +148,10 @@ if __name__ == "__main__":
     incomplete_df[class_column] = knn.test(incomplete_df)[knn.predicted_class_column_name]
 
     # concat complete and incomplete
-    complete_df = pd.concat([complete_df, incomplete_df], axis=0)
+    data_completed_df = pd.concat([complete_df, incomplete_df], axis=0)
 
-    main(complete_df)
-    # main_k_fold(complete_df)
+    # main(data_completed_df)
+    # main_k_fold(data_completed_df)
+    create_rate_boxplot(data_completed_df, "Star Rating")
+
+
