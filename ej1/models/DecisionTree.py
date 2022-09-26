@@ -1,5 +1,6 @@
 import math
 import pandas as pd
+
 from .Node import Node, NodeType
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -61,14 +62,16 @@ def information_gain(dataset, parent_entropy, attribute_column, attribute_values
     return parent_entropy - children_entropy
 
 class DecisionTree:
-    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes = [0, 1], classes_column_name = "Creditability", predicted_class_column_name = "Classification"):
+    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes = [0, 1], classes_column_name = "Creditability", predicted_class_column_name = "Classification", max_node_count = math.inf, tree_type = None):
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.classes = classes
         self.classes_column_name = classes_column_name
         self.predicted_class_column_name = predicted_class_column_name
-        # TODO: define constraints
+        self.max_node_count = max_node_count
+
+        self.tree_type = tree_type
 
     def get_attribute_values(self, dataset: pd.DataFrame, attribute_name):
         return dataset[attribute_name].unique()
@@ -93,6 +96,9 @@ class DecisionTree:
         return len(self.tree.nodes)
     
     def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
+        if depth > self.max_depth_by_attribute:
+            # print(f'Updating depth from {self.max_depth_by_attribute} to {depth}')
+            self.max_depth_by_attribute = depth
         # print(f"Building tree at depth {self.max_depth}")
         # check if class column value is unique
         class_values = dataset[self.classes_column_name].unique()
@@ -101,7 +107,7 @@ class DecisionTree:
             leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_values[0], depth=depth)
             return leaf_node
 
-        elif len(attributes) == 0 or depth == self.max_depth or depth == (self.max_depth - 1) or len(dataset) < self.min_samples_split:
+        elif len(attributes) == 0 or depth == self.max_depth or depth == (self.max_depth - 1) or len(dataset) < self.min_samples_split or self.node_count == self.max_node_count:
             # print("No remaining attributes...")
             # print("Choosing most common class value...")
             
@@ -136,6 +142,8 @@ class DecisionTree:
         max_gain_attribute_node = self.create_and_set_node(NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
         # update attributes list
         attributes.remove(max_gain_attribute)
+
+        self.node_count += 1
 
         # sus hijos se llaman como sus valores
         for attribute_value in self.values_by_attribute[max_gain_attribute]:
@@ -176,6 +184,9 @@ class DecisionTree:
         attributes = dataset.columns.drop(self.classes_column_name).tolist()
 
         self.tree = nx.DiGraph()
+
+        self.max_depth_by_attribute = 0
+        self.node_count = 0
         
         self.build_tree_recursive(dataset, attributes, depth=0)
 
@@ -292,7 +303,7 @@ class DecisionTree:
     def s_precision(self, dataset: pd.DataFrame) -> float:
         return (dataset[self.predicted_class_column_name] == dataset[self.classes_column_name]).sum() / len(dataset)
 
-    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth = 2, max_depth = 20) -> dict:
+    def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth = 2, max_depth = 20) -> dict:
         results = {}
         for depth in range(initial_depth, max_depth + 1, 2):
 
@@ -330,6 +341,39 @@ class DecisionTree:
 
         return results
 
+    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count = 100) -> dict:
+        results = {}
+        step_size = 100
+        for node_count in range(initial_node_count, max_node_count + step_size + 1, step_size):
+            self.min_samples_split = -1
+            self.max_node_count = node_count
+
+            # build tree
+            self.train(train_dataset)
+
+            # test with train dataset
+            train_dataset_predictions = self.test(train_dataset)
+
+            # test with test dataset
+            test_dataset_predictions = self.test(test_dataset)
+
+            # get s-precision for train predictions
+            train_s_precision = self.s_precision(train_dataset_predictions)
+
+            # get s-precision for test predictions
+            test_s_precision = self.s_precision(test_dataset_predictions)
+
+            # add to results
+            if node_count not in results:
+                results[node_count] = {
+                        "train_s_precision": train_s_precision,
+                        "test_s_precision": test_s_precision,
+                        "depth": self.max_depth_by_attribute
+                }
+
+
+        return results
+
     def plot_precision_per_node_count(self, results: dict):
         train_s_precisions = []
         test_s_precisions = []
@@ -345,8 +389,8 @@ class DecisionTree:
             depths.append(results[node_count]["depth"])
 
             # add depth value to both points
-            plt.annotate(f'd: {results[node_count]["depth"]}', (node_count - 20, results[node_count]["train_s_precision"] + 0.015 * annotation_position_multiplier))
-            plt.annotate(f'd: {results[node_count]["depth"]}', (node_count - 20, results[node_count]["test_s_precision"] + 0.015 * annotation_position_multiplier))
+            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20, results[node_count]["train_s_precision"] + 0.015 * annotation_position_multiplier))
+            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20, results[node_count]["test_s_precision"] + 0.015 * annotation_position_multiplier))
 
             annotation_position_multiplier *= -1
 
