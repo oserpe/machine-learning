@@ -1,4 +1,5 @@
 from itertools import groupby
+import random
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import numpy as np
@@ -28,14 +29,16 @@ def create_rate_boxplot(dataset, class_column):
 def main_k_fold(dataset):
     # load the model
     knn = KNN([], [], k_neighbors=5, weighted=True)
-
+    rand = random.randint(1,10000)
+    dataset = dataset.sample(frac=1, random_state=rand).reset_index(drop=True)
 
     # get dataset x and y values
     x = dataset.drop(knn.classes_column_name, axis=1)
     y = dataset[[knn.classes_column_name]]
 
-    results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
-    ), model=knn, x_column_names=x.columns, y_column_names=y.columns, k=5)
+    results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(
+        x.values.tolist(), y.values.tolist(), 
+        model=knn, x_column_names=x.columns, y_column_names=y.columns, k=5)
 
     # print results
     print("Results:")
@@ -65,7 +68,7 @@ def main(dataset):
     y_train = train_dataset[[class_column]]
 
     # load the model
-    knn = KNN(x_train, y_train, k_neighbors=20, weighted=False)
+    knn = KNN(x_train, y_train, k_neighbors=20, weighted=True)
 
     x_test = test_dataset.drop(class_column, axis=1)
     y_test = test_dataset[[class_column]]
@@ -150,8 +153,8 @@ if __name__ == "__main__":
     # concat complete and incomplete
     data_completed_df = pd.concat([complete_df, incomplete_df], axis=0)
 
-    main(data_completed_df)
-    # main_k_fold(data_completed_df)
+    # main(data_completed_df)
+    main_k_fold(data_completed_df)
     # create_rate_boxplot(data_completed_df, "Star Rating")
 
 

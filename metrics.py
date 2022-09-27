@@ -110,16 +110,17 @@ class Metrics:
             x_train = fold['x_train']
             y_train = fold['y_train']
             model.train(pd.concat([x_train, y_train], axis=1))
-
             # Evaluate the model on the test set
             x_test = fold['x_test']
             y_test = fold['y_test']
-            predictions = model.test(pd.concat([x_test, y_test], axis=1))
+            predictions = model.test(x_test)
 
             # Compute the metrics
             cf_matrix = Metrics.get_confusion_matrix(
-                predictions[model.classes_column_name].values.tolist(), predictions[model.predicted_class_column_name].values.tolist(), labels=model.classes)
-            
+                y_test, 
+                predictions[model.predicted_class_column_name].values.tolist(), 
+                labels=model.classes)
+
             metrics_df = Metrics.get_metrics_per_class(cf_matrix)[1]
 
             # Push the metrics to the total metrics
