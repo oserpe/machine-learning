@@ -58,14 +58,14 @@ def main(dataset):
     class_column = "Star Rating"
 
     # get train and test dataset
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.1)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
 
     # get train dataset x and y values
     x_train = train_dataset.drop(class_column, axis=1)
     y_train = train_dataset[[class_column]]
 
     # load the model
-    knn = KNN(x_train, y_train, k_neighbors=20, weighted=True)
+    knn = KNN(x_train, y_train, k_neighbors=20, weighted=False)
 
     x_test = test_dataset.drop(class_column, axis=1)
     y_test = test_dataset[[class_column]]
@@ -150,8 +150,8 @@ if __name__ == "__main__":
     # concat complete and incomplete
     data_completed_df = pd.concat([complete_df, incomplete_df], axis=0)
 
-    # main(data_completed_df)
+    main(data_completed_df)
     # main_k_fold(data_completed_df)
-    create_rate_boxplot(data_completed_df, "Star Rating")
+    # create_rate_boxplot(data_completed_df, "Star Rating")
 
 
