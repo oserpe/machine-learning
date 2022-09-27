@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from ..main import categorize_data_with_equal_frequency, categorize_data_with_equal_width
+import numpy as np
 # plot histogram of creditability, using a red bin for 0 and blue bin for 1
 
 
@@ -11,6 +12,28 @@ def plot_creditability_histogram(dataset: pd.DataFrame):
 
     # plot histogram
     display_data.apply(pd.value_counts).T.plot(kind='bar', rot=0)
+
+
+def plot_duration_of_credit_discretized_histogram(dataset: pd.DataFrame, bin_count):
+
+    display_data, bins = categorize_data_with_equal_frequency(
+        dataset, {"Duration of Credit (month)": bin_count})
+
+    # add small fraction to each bin for correct visualization
+    bins = np.add(bins, 0.000001)
+
+    # dataset["Duration of Credit (month)"].plot(
+    #     kind='hist', bins=bins, xticks=bins).co
+    # hist, bins = np.histogram(dataset["Duration of Credit (month)"], bins=bins)
+
+    plt.hist(dataset["Duration of Credit (month)"],
+             bins=bins, color='lightblue', edgecolor='black')
+    # set title and labels
+    plt.title("Discretización de Duration of Credit (month)")
+    plt.xlabel("Duration of Credit (month)")
+    plt.ylabel("Cantidad de ejemplares")
+    # set xticks
+    plt.xticks(bins)
 
 
 def plot_account_balance_histogram(dataset: pd.DataFrame):
@@ -38,7 +61,8 @@ if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
-    plot_general_histogram(data_df)
+    # plot_general_histogram(data_df)
+    plot_duration_of_credit_discretized_histogram(data_df, 6)
     plt.show(block=True)
 
     # plot_account_balance_histogram(data_df)
