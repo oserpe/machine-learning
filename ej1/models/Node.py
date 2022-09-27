@@ -3,7 +3,6 @@ from enum import Enum
 class NodeType(Enum):
     LEAF = 0
     ATTRIBUTE = 1
-    ATTRIBUTE_VALUE = 2
 
 class Node():
     id = -1
