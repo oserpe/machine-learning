@@ -1,4 +1,5 @@
 import math
+from turtle import color
 import pandas as pd
 
 from .Node import Node, NodeType
@@ -246,7 +247,7 @@ class DecisionTree:
         root_node = self.get_root_node()
         self.prune_recursive(dataset, root_node["node_id"])
 
-    def prune_recursive(self, dataset: pd.DataFrame, node_id: int):
+    def prune_recursive(self, dataset: pd.DataFrame, node_id: int, previous_node_id: int = None):
         # BOTTOM-UP PRUNING
         current_node = self.tree.nodes[node_id]
 
@@ -255,7 +256,6 @@ class DecisionTree:
 
         current_attribute = current_node["node_value"]
 
-        attribute_value_nodes = self.tree.successors(node_id)
         out_edges = self.tree.out_edges(node_id)
 
         for edge in out_edges:
@@ -265,25 +265,27 @@ class DecisionTree:
             if len(dataset_given_attribute_value) != 0:
                 # call prune on the child node
                 self.prune_recursive(
-                    dataset_given_attribute_value, next_node_id)
+                    dataset_given_attribute_value, next_node_id, node_id)
+        
+        if previous_node_id is None:
+            return  # we are at the root node
 
-            current_error = self.calculate_error(dataset, self.tree)
+        current_error = self.calculate_error(dataset, self.tree)
 
-            pruned_tree = copy.deepcopy(self.tree)
-            pruned_tree.remove_node(next_node_id)
+        pruned_tree = copy.deepcopy(self.tree)
+        pruned_tree.remove_node(node_id)
 
-            class_mode = dataset[self.classes_column_name].mode()[0]
+        class_mode = dataset[self.classes_column_name].mode()[0]
 
-            depth = current_node["node_depth"]+1
-            self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode,
-                                    depth=depth, id=next_node_id, tree=pruned_tree)
-            pruned_tree.add_edge(node_id, next_node_id, label=str(
-                    edge_value))
+        self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode,
+                                depth=current_node["node_depth"], id=node_id, tree=pruned_tree)
+        edge_value = self.tree.get_edge_data(previous_node_id, node_id)["label"]
+        pruned_tree.add_edge(previous_node_id, node_id, label=edge_value, color="red")
 
-            new_error = self.calculate_error(dataset, pruned_tree)
-            if new_error < current_error:
-                self.tree = pruned_tree
-                print("PRUNED!")
+        new_error = self.calculate_error(dataset, pruned_tree)
+        if new_error < current_error:
+            self.tree = pruned_tree
+            print("PRUNED!")
 
     def calculate_error(self, dataset: pd.DataFrame, tree: nx.DiGraph):
         incorrect_predictions = 0

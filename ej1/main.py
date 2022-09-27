@@ -99,14 +99,13 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # get train and test datasets
     train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
-
     tree.train(train_dataset)
-
-    if(tree_type == TreeType.DECISION_TREE):
-        tree.draw()
 
     # prune
     tree.prune(test_dataset)
+
+    if(tree_type == TreeType.DECISION_TREE):
+        tree.draw()
 
     # test 
     results = tree.test(test_dataset)
