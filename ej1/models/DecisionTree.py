@@ -80,15 +80,16 @@ class DecisionTree:
     def get_all_attribute_values(self, dataset: pd.DataFrame):
         return {attribute: self.get_attribute_values(dataset, attribute) for attribute in dataset.columns}
 
-    def create_and_set_node(self, node_type: NodeType, value=None, depth=0, id=None, tree=None):
+    def create_and_set_node(self, node_type: NodeType, value=None, depth=0, id=None, tree=None, most_common_attribute_value=None):
         node = Node(node_type=node_type, value=value, depth=depth, id=id)
         target_tree = tree if tree else self.tree
         target_tree.add_node(node.id, label=str(node), level=depth)
         properties = {
-            "node_value": str(value),
-            "node_id": node.id,
-            "node_type": str(node_type),
-            "node_depth": depth
+                "node_value": str(value),
+                "node_id": node.id,
+                "node_type": str(node_type),
+                "node_depth": depth,
+                "node_most_common_attribute_value": str(most_common_attribute_value)
         }
         nx.set_node_attributes(target_tree, {node.id: properties})
         return node
@@ -142,9 +143,12 @@ class DecisionTree:
                 max_gain = attribute_gain
                 max_gain_attribute = attribute
 
+        # get most frequent attribute value
+        attribute_value_mode = dataset[max_gain_attribute].mode()[0]
+
         # creamos el nodo "atributo"
         max_gain_attribute_node = self.create_and_set_node(
-            NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
+            NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth, most_common_attribute_value=attribute_value_mode)
         # update attributes list
         attributes.remove(max_gain_attribute)
 
@@ -154,24 +158,14 @@ class DecisionTree:
         for attribute_value in self.values_by_attribute[max_gain_attribute]:
             dataset_by_attribute_value = dataset[(
                 dataset[max_gain_attribute] == attribute_value)]
-
             if len(dataset_by_attribute_value) == 0:
-                class_mode = dataset[self.classes_column_name].mode()[0]
-
-                leaf_node = self.create_and_set_node(
-                    NodeType.LEAF, value=class_mode, depth=depth+1)
-
-                self.tree.add_edge(max_gain_attribute_node.id, leaf_node.id, label=str(
-                    attribute_value))
-
                 continue
 
             # Create subtree
             attribute_child_node = self.build_tree_recursive(
                 dataset_by_attribute_value, attributes.copy(), depth=depth+1)
 
-            self.tree.add_edge(max_gain_attribute_node.id,
-                               attribute_child_node.id, label=str(attribute_value))
+            self.tree.add_edge(max_gain_attribute_node.id, attribute_child_node.id, label=str(attribute_value))
 
         return max_gain_attribute_node
 
@@ -192,18 +186,18 @@ class DecisionTree:
 
     def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
         out_edges = tree.out_edges(node["node_id"])
-
+        most_common_attribute_value = node["node_most_common_attribute_value"]
         for edge in out_edges:
             edge_value = tree.get_edge_data(*edge)["label"]
 
             if edge_value == str(attribute_value):
                 successor_node_id = edge[1]
                 return tree.nodes[successor_node_id]
+                
+            if edge_value == str(most_common_attribute_value):
+                most_frequent_path_node_id = edge[1]
 
-        # if no successor is found, return the leaf node associated to the node
-        # the value wasn't even present in the training set
-        # FIXME: POSSIBLE INVALID RETURN VALUE
-        return None
+        return tree.nodes[most_frequent_path_node_id]
 
     def draw(self):
         g = Network(height='100%', width='100%',
@@ -219,10 +213,10 @@ class DecisionTree:
     def get_root_node_from_tree(self, tree: nx.DiGraph):
         return tree.nodes[0]
 
-    def classify(self, sample: pd.DataFrame):
+    def classify(self, sample: pd.Series):
         return self.classify_from_tree(sample, self.tree)
 
-    def classify_from_tree(self, sample: pd.DataFrame, tree: nx.DiGraph):
+    def classify_from_tree(self, sample: pd.Series, tree: nx.DiGraph):
         # get root node and its attribute
         current_node = self.get_root_node_from_tree(tree)
         current_attribute = current_node["node_value"]
@@ -279,8 +273,8 @@ class DecisionTree:
 
         self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode,
                                 depth=current_node["node_depth"], id=node_id, tree=pruned_tree)
-        edge_value = self.tree.get_edge_data(previous_node_id, node_id)["label"]
-        pruned_tree.add_edge(previous_node_id, node_id, label=edge_value, color="red")
+        edge_label = self.tree.get_edge_data(previous_node_id, node_id)["label"]
+        pruned_tree.add_edge(previous_node_id, node_id, label=edge_label, color="red")
 
         new_error = self.calculate_error(dataset, pruned_tree)
         if new_error < current_error:

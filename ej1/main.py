@@ -102,14 +102,14 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     tree.train(train_dataset)
 
     # prune
-    tree.prune(test_dataset)
+    #tree.prune(test_dataset)
 
     if(tree_type == TreeType.DECISION_TREE):
         tree.draw()
 
     # test 
     results = tree.test(test_dataset)
-
+    
     # print metrics
     # get the prediction column values
     y_predictions = results[tree.predicted_class_column_name].values.tolist()
