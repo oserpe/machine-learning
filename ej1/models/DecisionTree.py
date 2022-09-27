@@ -8,6 +8,7 @@ from networkx.drawing.nx_pydot import graphviz_layout
 from pyvis.network import Network
 import copy
 
+
 def relative_frequency(count, total, classes_count, laplace_correction=False):
     """Calculates the relative frequency of a given count."""
     if laplace_correction:
@@ -31,7 +32,7 @@ def calculate_probabilities_by_class(dataset, class_column, class_values):
 
 def shannon_entropy(probabilities):
     """Calculates the Shannon entropy of a list of probabilities."""
-    return sum(-p * math.log2(p) for p in probabilities if p != 0)    
+    return sum(-p * math.log2(p) for p in probabilities if p != 0)
 
 
 def gini_index(probabilities):
@@ -61,8 +62,9 @@ def information_gain(dataset, parent_entropy, attribute_column, attribute_values
 
     return parent_entropy - children_entropy
 
+
 class DecisionTree:
-    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes = [0, 1], classes_column_name = "Creditability", predicted_class_column_name = "Classification", max_node_count = math.inf, tree_type = None):
+    def __init__(self, max_depth=math.inf, min_samples_split=-1, min_samples_leaf=-1, classes=[0, 1], classes_column_name="Creditability", predicted_class_column_name="Classification", max_node_count=math.inf, tree_type=None):
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
@@ -91,11 +93,11 @@ class DecisionTree:
         }
         nx.set_node_attributes(target_tree, {node.id: properties})
         return node
-        
+
     def count_nodes(self):
         return len(self.tree.nodes)
-    
-    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth = 0):
+
+    def build_tree_recursive(self, dataset: pd.DataFrame, attributes: list[str], depth=0):
         if depth > self.max_depth_by_attribute:
             # print(f'Updating depth from {self.max_depth_by_attribute} to {depth}')
             self.max_depth_by_attribute = depth
@@ -104,19 +106,21 @@ class DecisionTree:
         class_values = dataset[self.classes_column_name].unique()
         if len(class_values) == 1:
             # return leaf node with class value
-            leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_values[0], depth=depth)
+            leaf_node = self.create_and_set_node(
+                NodeType.LEAF, value=class_values[0], depth=depth)
             return leaf_node
 
         elif len(attributes) == 0 or depth == self.max_depth or depth == (self.max_depth - 1) or len(dataset) < self.min_samples_split or self.node_count == self.max_node_count:
             # print("No remaining attributes...")
             # print("Choosing most common class value...")
-            
+
             class_mode = dataset[self.classes_column_name].mode()[0]
 
             # print(f"Most common class value: {class_mode}")
-            
-            leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_mode, depth=depth)
-            
+
+            leaf_node = self.create_and_set_node(
+                NodeType.LEAF, value=class_mode, depth=depth)
+
             return leaf_node
 
         parent_probabilities = calculate_probabilities_by_class(
@@ -133,13 +137,14 @@ class DecisionTree:
             attribute_values = self.values_by_attribute[attribute]
             attribute_gain = information_gain(dataset, parent_entropy, attribute, attribute_values, self.classes_column_name,
                                               class_values)
-                
+
             if attribute_gain > max_gain:
                 max_gain = attribute_gain
                 max_gain_attribute = attribute
 
         # creamos el nodo "atributo"
-        max_gain_attribute_node = self.create_and_set_node(NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
+        max_gain_attribute_node = self.create_and_set_node(
+            NodeType.ATTRIBUTE, value=max_gain_attribute, depth=depth)
         # update attributes list
         attributes.remove(max_gain_attribute)
 
@@ -147,8 +152,9 @@ class DecisionTree:
 
         # sus hijos se llaman como sus valores
         for attribute_value in self.values_by_attribute[max_gain_attribute]:
-            dataset_by_attribute_value = dataset[(dataset[max_gain_attribute] == attribute_value)]
-            
+            dataset_by_attribute_value = dataset[(
+                dataset[max_gain_attribute] == attribute_value)]
+
             if len(dataset_by_attribute_value) == 0:
 
                 # print("No remaining samples...\nChoosing most common class value...")
@@ -156,22 +162,19 @@ class DecisionTree:
 
                 # print(f"Most common class value: {class_mode}")
 
-                attribute_child_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
-                self.tree.add_edge(max_gain_attribute_node.id, attribute_child_node.id)
+                leaf_node = self.create_and_set_node(
+                    NodeType.LEAF, value=class_mode, depth=depth+1)
+                self.tree.add_edge(max_gain_attribute_node.id, leaf_node.id, label=str(
+                    attribute_value))
 
-                leaf_node = self.create_and_set_node(NodeType.LEAF, value=class_mode, depth=depth+2)
-                self.tree.add_edge(attribute_child_node.id, leaf_node.id)
                 continue
-            
-            attribute_value_node = self.create_and_set_node(NodeType.ATTRIBUTE_VALUE, value=attribute_value, depth=depth+1)
-
-            self.tree.add_edge(max_gain_attribute_node.id, attribute_value_node.id)
 
             # creamos el subarbol
             attribute_child_node = self.build_tree_recursive(
-                dataset_by_attribute_value, attributes.copy(), depth=depth+2)
-                
-            self.tree.add_edge(attribute_value_node.id, attribute_child_node.id)
+                dataset_by_attribute_value, attributes.copy(), depth=depth+1)
+
+            self.tree.add_edge(max_gain_attribute_node.id,
+                               attribute_child_node.id, label=str(attribute_value))
 
         return max_gain_attribute_node
 
@@ -187,24 +190,23 @@ class DecisionTree:
 
         self.max_depth_by_attribute = 0
         self.node_count = 0
-        
+
         self.build_tree_recursive(dataset, attributes, depth=0)
 
     def get_next_node(self, node, attribute_value, tree: nx.DiGraph):
+        out_edges = tree.out_edges(node["node_id"])
 
-        successors = tree.successors(node["node_id"])
+        for edge in out_edges:
+            edge_value = tree.get_edge_data(*edge)["label"]
 
-        for successor_id in successors:
-            successor_node = tree.nodes[successor_id]
-            if successor_node["node_value"] == str(attribute_value):
-                # get the successor of the successor as an attribute value node its 
-                # connected to another attribute node or a leaf node
-                successor_of_successor_id = list(tree.successors(successor_id))[0]
-                return tree.nodes[successor_of_successor_id]
-        
+            if edge_value == str(attribute_value):
+                successor_node_id = edge[1]
+                return tree.nodes[successor_node_id]
+
         # if no successor is found, return the leaf node associated to the node
         # the value wasn't even present in the training set
-        
+        # FIXME: POSSIBLE INVALID RETURN VALUE
+        return None
 
     def draw(self):
 
@@ -214,7 +216,6 @@ class DecisionTree:
         g.from_nx(self.tree)
 
         g.show('tree.html')
-
 
     def get_root_node(self):
         return self.get_root_node_from_tree(self.tree)
@@ -235,7 +236,9 @@ class DecisionTree:
 
         # for every other attribute, get the next node until we reach a leaf node
         while current_node["node_type"] != str(NodeType.LEAF):
-            current_node = self.get_next_node(current_node, attribute_value, tree)
+            current_node = self.get_next_node(
+                current_node, attribute_value, tree)
+
             if current_node["node_type"] == str(NodeType.LEAF):
                 return int(current_node["node_value"])
 
@@ -243,7 +246,6 @@ class DecisionTree:
             attribute_value = sample[current_attribute]
 
         return int(current_node["node_value"])
-
 
     def prune(self, dataset: pd.DataFrame):
         root_node = self.get_root_node()
@@ -263,22 +265,25 @@ class DecisionTree:
         # iterate over attribute value nodes to prune next attributes
         for value_node_id in attribute_value_nodes:
             value_node = self.tree.nodes[value_node_id]
-            
+
             next_node_id = list(self.tree.successors(value_node_id))[0]
             # next node is either a leaf node or an attribute node (only one)
-            dataset_given_attribute_value = dataset[dataset[current_attribute] == int(value_node["node_value"])]
+            dataset_given_attribute_value = dataset[dataset[current_attribute] == int(
+                value_node["node_value"])]
             if len(dataset_given_attribute_value) != 0:
-                self.prune_recursive(dataset_given_attribute_value, next_node_id)
+                self.prune_recursive(
+                    dataset_given_attribute_value, next_node_id)
 
         current_error = self.calculate_error(dataset, self.tree)
-        
+
         pruned_tree = copy.deepcopy(self.tree)
         pruned_tree.remove_node(next_node_id)
 
         class_mode = dataset[self.classes_column_name].mode()[0]
 
         depth = value_node["node_depth"]+1
-        self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode, depth=depth, id=next_node_id, tree=pruned_tree)
+        self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode,
+                                 depth=depth, id=next_node_id, tree=pruned_tree)
         pruned_tree.add_edge(value_node_id, next_node_id)
 
         new_error = self.calculate_error(dataset, pruned_tree)
@@ -291,19 +296,19 @@ class DecisionTree:
         for index, sample in dataset.iterrows():
             if self.classify_from_tree(sample, tree) != sample[self.classes_column_name]:
                 incorrect_predictions += 1
-        
+
         return incorrect_predictions/len(dataset)
-        
 
     def test(self, dataset: pd.DataFrame) -> pd.DataFrame:
         dataset_copy = dataset.copy()
-        dataset_copy[self.predicted_class_column_name] = dataset.apply(self.classify, axis=1)
+        dataset_copy[self.predicted_class_column_name] = dataset.apply(
+            self.classify, axis=1)
         return dataset_copy
 
     def s_precision(self, dataset: pd.DataFrame) -> float:
         return (dataset[self.predicted_class_column_name] == dataset[self.classes_column_name]).sum() / len(dataset)
 
-    def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth = 2, max_depth = 20) -> dict:
+    def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth=2, max_depth=20) -> dict:
         results = {}
         for depth in range(initial_depth, max_depth + 1, 2):
 
@@ -333,15 +338,14 @@ class DecisionTree:
             # add to results
             if node_count not in results:
                 results[node_count] = {
-                        "train_s_precision": train_s_precision,
-                        "test_s_precision": test_s_precision,
-                        "depth": depth
+                    "train_s_precision": train_s_precision,
+                    "test_s_precision": test_s_precision,
+                    "depth": depth
                 }
-
 
         return results
 
-    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count = 100) -> dict:
+    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count=100) -> dict:
         results = {}
         step_size = 100
         for node_count in range(initial_node_count, max_node_count + step_size + 1, step_size):
@@ -366,11 +370,10 @@ class DecisionTree:
             # add to results
             if node_count not in results:
                 results[node_count] = {
-                        "train_s_precision": train_s_precision,
-                        "test_s_precision": test_s_precision,
-                        "depth": self.max_depth_by_attribute
+                    "train_s_precision": train_s_precision,
+                    "test_s_precision": test_s_precision,
+                    "depth": self.max_depth_by_attribute
                 }
-
 
         return results
 
@@ -389,13 +392,17 @@ class DecisionTree:
             depths.append(results[node_count]["depth"])
 
             # add depth value to both points
-            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20, results[node_count]["train_s_precision"] + 0.015 * annotation_position_multiplier))
-            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20, results[node_count]["test_s_precision"] + 0.015 * annotation_position_multiplier))
+            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20,
+                         results[node_count]["train_s_precision"] + 0.015 * annotation_position_multiplier))
+            plt.annotate(f'd: {(results[node_count]["depth"] - 2) / 2}', (node_count - 20,
+                         results[node_count]["test_s_precision"] + 0.015 * annotation_position_multiplier))
 
             annotation_position_multiplier *= -1
 
-        plt.plot(node_counts, train_s_precisions, label="Train", linestyle='--', marker='o', color='r')
-        plt.plot(node_counts, test_s_precisions, label="Test", linestyle='--', marker='o', color='b')
+        plt.plot(node_counts, train_s_precisions, label="Train",
+                 linestyle='--', marker='o', color='r')
+        plt.plot(node_counts, test_s_precisions, label="Test",
+                 linestyle='--', marker='o', color='b')
         plt.legend()
         plt.xlabel("Node count")
         plt.ylabel("Precision")
