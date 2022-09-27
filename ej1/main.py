@@ -97,12 +97,12 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # dataset = dataset.drop(continuous_columns, axis=1)
 
     # get train and test datasets
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
 
     tree.train(train_dataset)
 
     # prune
-    #tree.prune(test_dataset)
+    tree.prune(test_dataset)
 
     if(tree_type == TreeType.DECISION_TREE):
         tree.draw()

@@ -1,4 +1,5 @@
 import math
+import random
 from turtle import color
 import pandas as pd
 
@@ -73,6 +74,9 @@ class DecisionTree:
         self.predicted_class_column_name = predicted_class_column_name
         self.max_node_count = max_node_count
         self.tree_type = tree_type
+
+
+        self.i = 0
 
     def get_attribute_values(self, dataset: pd.DataFrame, attribute_name):
         return dataset[attribute_name].unique()
@@ -196,7 +200,6 @@ class DecisionTree:
                 
             if edge_value == str(most_common_attribute_value):
                 most_frequent_path_node_id = edge[1]
-
         return tree.nodes[most_frequent_path_node_id]
 
     def draw(self):
@@ -228,7 +231,7 @@ class DecisionTree:
         while current_node["node_type"] != str(NodeType.LEAF):
             current_node = self.get_next_node(
                 current_node, attribute_value, tree)
-
+            
             if current_node["node_type"] == str(NodeType.LEAF):
                 return int(current_node["node_value"])
 
@@ -267,7 +270,8 @@ class DecisionTree:
         current_error = self.calculate_error(dataset, self.tree)
 
         pruned_tree = copy.deepcopy(self.tree)
-        pruned_tree.remove_node(node_id)
+
+        self.remove_node_and_children(node_id, pruned_tree)
 
         class_mode = dataset[self.classes_column_name].mode()[0]
 
@@ -278,8 +282,22 @@ class DecisionTree:
 
         new_error = self.calculate_error(dataset, pruned_tree)
         if new_error < current_error:
+            self.i += 1
             self.tree = pruned_tree
             print("PRUNED!")
+
+    def remove_node_and_children(self, node_id, tree):
+        node = tree.nodes[node_id]
+        if node["node_type"] == str(NodeType.LEAF):
+            tree.remove_node(node_id)
+            return
+        
+        out_edges = tree.out_edges(node_id)
+        for edge in list(out_edges):
+            next_node_id = edge[1]
+            self.remove_node_and_children(next_node_id, tree)
+
+        tree.remove_node(node_id)
 
     def calculate_error(self, dataset: pd.DataFrame, tree: nx.DiGraph):
         incorrect_predictions = 0
@@ -336,7 +354,7 @@ class DecisionTree:
         return results
 
     def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, 
-                                    initial_node_count: int = 10, max_node_count=100) -> dict:
+                                    initial_node_count: int = 10, max_node_count=100, prune=False) -> dict:
         results = {}
         step_size = 100
         for node_count in range(initial_node_count, max_node_count + step_size + 1, step_size):
@@ -345,6 +363,9 @@ class DecisionTree:
 
             # build tree
             self.train(train_dataset)
+            
+            if prune:
+                self.prune(test_dataset)
 
             # test with train dataset
             train_dataset_predictions = self.test(train_dataset)
