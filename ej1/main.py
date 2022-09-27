@@ -102,30 +102,30 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # dataset = dataset.drop(continuous_columns, axis=1)
 
     # get train and test datasets
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
 
-    # tree.train(train_dataset)
+    tree.train(train_dataset)
 
-    # if(tree_type == TreeType.DECISION_TREE):
-    #     tree.draw()
+    # prune
+    tree.prune(test_dataset)
 
-    # # prune
-    # tree.prune(test_dataset)
+    if(tree_type == TreeType.DECISION_TREE):
+        tree.draw()
 
-    # # test
-    # results = tree.test(test_dataset)
+    # test 
+    results = tree.test(test_dataset)
+    
+    # print metrics
+    # get the prediction column values
+    y_predictions = results[tree.predicted_class_column_name].values.tolist()
 
-    # # print metrics
-    # # get the prediction column values
-    # y_predictions = results[tree.predicted_class_column_name].values.tolist()
+    # get the class column values
+    y = results[tree.classes_column_name].values.tolist()
 
-    # # get the class column values
-    # y = results[tree.classes_column_name].values.tolist()
+    labels = [0, 1]
 
-    # labels = [0, 1]
-
-    # cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
-    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # print s-precision plot
     results = tree.s_precision_per_node_count(
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
     #main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
-    tree_type = TreeType.RANDOM_FOREST
+    tree_type = TreeType.DECISION_TREE
     categorical_columns = {
         # Quantity picked arbitrarily for this dataset taking into account that it separates the data in categories of the closest amount
         "Duration of Credit (month)": 6,
@@ -205,5 +205,5 @@ if __name__ == "__main__":
     # print(data_df["Age (years)"].value_counts())
 
     # gender_study(data_df)
-    # main(data_df, tree_type)
-    main_k_fold(data_df)
+    main(data_df, tree_type)
+    # main_k_fold(data_df)
