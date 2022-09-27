@@ -21,7 +21,7 @@ class Metrics:
         """
         Split the dataset into a train and test set
         """
-        train_dataset = dataset.sample(frac=1-test_size, replace=False, random_state=1)
+        train_dataset = dataset.sample(frac=1-test_size, replace=False)
         test_dataset = dataset.drop(train_dataset.index)
 
         return train_dataset, test_dataset
