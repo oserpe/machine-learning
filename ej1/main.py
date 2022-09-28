@@ -137,6 +137,32 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # tree.plot_precision_per_node_count(results)
 
 
+def main_n_k_fold(dataset: pd.DataFrame):
+    tree = DecisionTree()
+
+    # get dataset without class column
+    x = dataset.drop(tree.classes_column_name, axis=1)
+
+    # get dataset dataframe with only class column
+    y = dataset[[tree.classes_column_name]]
+
+    # call n-k-fold cross validation
+    avg_metrics, std_metrics = Metrics.n_k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
+    ), model=tree, x_column_names=x.columns, y_column_names=y.columns, n=1, k=5)
+
+    # print results
+    print("Average metrics:")
+    print(avg_metrics)
+
+    print("Standard deviation metrics:")
+    print(std_metrics)
+
+    Metrics.plot_metrics_heatmap(avg_metrics, std_metrics)
+
+    # save to csv
+    Metrics.avg_and_std_metrics_to_csv(
+        tree.classes, avg_metrics, std_metrics, path=f"./machine-learning/ej1/dump/{tree.tree_type}_n_avg_std_metrics.csv")
+
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
@@ -158,5 +184,5 @@ if __name__ == "__main__":
     # print(data_df["Age (years)"].value_counts())
 
     # main(data_df, tree_type)
-    # main_k_fold(data_df)
-    gender_study(data_df)
+    main_n_k_fold(data_df)
+    # gender_study(data_df)
