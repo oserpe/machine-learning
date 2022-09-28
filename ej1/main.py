@@ -8,6 +8,38 @@ from .models.TreeType import TreeType
 from .models.DecisionTree import DecisionTree
 from .models.RandomForest import RandomForest
 from ..metrics import Metrics
+import matplotlib.pyplot as plt
+
+
+def metrics_per_prune_method(dataset):
+    tree_pruned = DecisionTree()
+    tree_depth = DecisionTree(max_depth=3)
+    tree_nodes = DecisionTree(max_node_count=65)
+
+    # get dataset without class column
+    x = dataset.drop(tree_pruned.classes_column_name, axis=1)
+
+    # get dataset dataframe with only class column
+    y = dataset[[tree_pruned.classes_column_name]]
+
+
+    method_names = ["Pruned", "Max depth", "Max node count"]
+    method_trees= [tree_pruned, tree_depth, tree_nodes]
+    for index, method in enumerate(method_names):
+        tree = method_trees[index]
+
+        results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
+        ), model=tree, x_column_names=x.columns, y_column_names=y.columns, k=5, prune=method == "Pruned")
+
+        # print results
+        print("Average metrics:")
+        print(avg_metrics)
+
+        print("Standard deviation metrics:")
+        print(std_metrics)
+
+        Metrics.plot_metrics_heatmap_std(avg_metrics, std_metrics)
+            
 
 
 def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_estimators: int = 10, samples_per_bag_frac: float = 1):
@@ -79,6 +111,70 @@ def main_k_fold(dataset: pd.DataFrame):
     # save to csv
     Metrics.avg_and_std_metrics_to_csv(
         tree.classes, avg_metrics, std_metrics, path="./machine-learning/ej1/dump/avg_std_metrics.csv")
+
+
+def s_precision(y, y_predictions):
+    positives_count = 0
+    for y_pred, y_true in zip(y_predictions, y):
+        if y_pred == y_true:
+            positives_count += 1
+
+    return positives_count / len(y_predictions)
+
+def main_n_estimators_rf(dataset: pd.DataFrame):
+
+    class_column = "Creditability"
+
+    # get train and test datasets
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
+
+    estimators = [2, 5, 10, 20, 30, 40]
+
+    s_test_precisions = []
+    s_train_precisions = []
+
+    prediction_column = "Classification"
+
+    for n_estimators in estimators:
+        tree = RandomForest(n_estimators)
+
+        tree.train(train_dataset, class_column)
+
+        # test training set
+        results = tree.test(train_dataset, prediction_column)
+
+        # get the prediction column values
+        y_predictions = results[prediction_column].values.tolist()
+
+        # get the class column values
+        y = results[class_column].values.tolist()
+
+        s_train_precisions.append(s_precision(y, y_predictions))
+
+        # test
+        results = tree.test(test_dataset, prediction_column)
+
+        # get the prediction column values
+        y_predictions = results[prediction_column].values.tolist()
+
+        # get the class column values
+        y = results[class_column].values.tolist()
+
+        s_test_precisions.append(s_precision(y, y_predictions))
+
+
+    # plot precisions
+    plt.plot(estimators, s_train_precisions, label="Train",
+                linestyle='--', marker='o', color='r')
+
+    plt.plot(estimators, s_test_precisions, label="Test",
+                 linestyle='--', marker='o', color='b')
+    plt.legend()
+    plt.xlabel("Tree count")
+    plt.ylabel("Precision")
+    plt.title("Precision vs tree count")
+    plt.ylim(top=1.1)
+    plt.show()
 
 
 def main(dataset: pd.DataFrame, tree_type: TreeType, prune: bool = False):
@@ -185,6 +281,9 @@ if __name__ == "__main__":
 
     # main(data_df, tree_type)
     # main_k_fold(data_df)
-    plot_preprune_methods_accuracy(data_df)
+    # plot_preprune_methods_accuracy(data_df)
+    # plot_preprune_methods_accuracy(data_df)
+    metrics_per_prune_method(data_df)
     # main_n_k_fold(data_df)
     # gender_study(data_df)
+    # main_n_estimators_rf(data_df)

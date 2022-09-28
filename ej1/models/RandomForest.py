@@ -28,25 +28,25 @@ class RandomForest:
             print(f"Training tree {i+1} of {self.n_estimators}")
 
             tree = self.trees[i]
-            tree.train(bag, class_column)
+            tree.train(bag)
 
             print(f"Tree {i+1} of {self.n_estimators} trained")
             print("####################")
 
-    def classify(self, sample: pd.DataFrame):
+    def classify(self, sample: pd.Series):
         votes = [tree.classify(sample) for tree in self.trees]
         return mode(votes)
 
     def test(self, dataset: pd.DataFrame, prediction_column: str) -> pd.DataFrame:
         print("####################")
         print("Classifying with random forest...")
-
-        dataset[prediction_column] = dataset.apply(self.classify, axis=1)
+        dataset_copy = dataset.copy()
+        dataset_copy[prediction_column] = dataset_copy.apply(self.classify, axis=1)
 
         print("Classification finished...")
         print("####################")
 
-        return dataset
+        return dataset_copy
 
     def test_every_tree(self, dataset: pd.DataFrame, prediction_column: str) -> list[pd.DataFrame]:
         results = []

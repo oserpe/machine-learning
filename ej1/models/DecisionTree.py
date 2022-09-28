@@ -320,7 +320,6 @@ class DecisionTree:
     def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth=1, max_depth=7) -> dict:
         results = {}
         for depth in range(initial_depth, max_depth + 1):
-
             # set max depth
             self.max_depth = depth
             self.min_samples_split = -1

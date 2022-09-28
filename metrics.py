@@ -86,7 +86,7 @@ class Metrics:
         return folds
 
     @staticmethod
-    def k_fold_cross_validation_eval(x, y, model, k: int, x_column_names: list = None, y_column_names: list = None):
+    def k_fold_cross_validation_eval(x, y, model, k: int, x_column_names: list = None, y_column_names: list = None, prune = False):
         if model is None:
             raise ValueError("Model cannot be None")
 
@@ -114,6 +114,10 @@ class Metrics:
             # Evaluate the model on the test set
             x_test = fold['x_test']
             y_test = fold['y_test']
+            
+            if prune:
+                model.prune(pd.concat([x_test, y_test], axis=1))
+
             predictions = model.test(x_test)
 
             # Compute the metrics
