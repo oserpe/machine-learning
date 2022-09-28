@@ -1,5 +1,7 @@
 import pandas as pd
 
+from .gender_study import gender_study
+
 from .models.TreeType import TreeType
 from .models.DecisionTree import DecisionTree
 from .models.RandomForest import RandomForest
@@ -97,9 +99,6 @@ def main_k_fold(dataset: pd.DataFrame):
 
 def main(dataset: pd.DataFrame, tree_type: TreeType):
     tree = tree_type.get_tree()
-    # drop continous columns
-    # continuous_columns = ["Duration of Credit (month)", "Credit Amount", "Age (years)"]
-    # dataset = dataset.drop(continuous_columns, axis=1)
 
     # get train and test datasets
     train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
@@ -138,52 +137,6 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # tree.plot_precision_per_node_count(results)
 
 
-def gender_study(dataset_df: pd.DataFrame):
-    gender_column = "Sex & Marital Status"
-    female_data_df = data_df[data_df[gender_column] == 4]
-    male_data_df = data_df[data_df[gender_column] != 4]
-
-    print("Porcentaje de hombres que piden un prestamo sobre el total: ",
-          round(len(male_data_df)/len(dataset_df), 2))
-
-    occupation_column = "Occupation"
-    executive_occupation_id = 4
-    print("Porcentaje de mujeres en puestos ejecutivos sobre el total de ejecutivos: ",
-          round(female_data_df.groupby(occupation_column).size()[executive_occupation_id] /
-                dataset_df.groupby(occupation_column).size()[executive_occupation_id], 2))
-    print("En las mujeres el porcentaje que ocupa puestos ejecutivos es: ",
-          round(female_data_df.groupby(occupation_column).size()[executive_occupation_id] /
-                len(female_data_df), 2))
-    print("En los hombres el porcentaje que ocupa puestos ejecutivos es: ",
-          round(male_data_df.groupby(occupation_column).size()[executive_occupation_id] /
-                len(male_data_df), 2))
-
-    amount_column = "Credit Amount"
-    amount_separator = 4
-    print(f"En las mujeres el porcentaje de las que piden prestamos menores a la categoria {amount_separator} es: ",
-          round(len(female_data_df[female_data_df[amount_column] < amount_separator]) /
-                len(female_data_df), 2))
-    print(f"En los hombres el porcentaje de los que piden prestamos menores a la categoria {amount_separator} es: ",
-          round(len(male_data_df[male_data_df[amount_column] < amount_separator]) /
-                len(male_data_df), 2))
-
-    most_valuable_asset_column = "Most valuable available asset"
-    print(f"En las mujeres el porcentaje de las que no tienen most valuable asset es: ",
-          round(len(female_data_df[female_data_df[most_valuable_asset_column] <= 1]) /
-                len(female_data_df), 2))
-    print(f"En los hombres el porcentaje de los que no tienen most valuable asset es: ",
-          round(len(male_data_df[male_data_df[most_valuable_asset_column] <= 1]) /
-                len(male_data_df), 2))
-
-    age_column = "Age (years)"
-    current_employment = "Length of current employment"
-    saves_column = "Value Savings/Stocks"
-    creditability_column = "Creditability"
-    duration_column = "Duration of Credit (month)"
-    print(female_data_df.groupby(duration_column).size())
-    print(male_data_df.groupby(duration_column).size())
-
-
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
@@ -204,6 +157,6 @@ if __name__ == "__main__":
     # print(data_df["Credit Amount"].value_counts())
     # print(data_df["Age (years)"].value_counts())
 
-    # gender_study(data_df)
-    main(data_df, tree_type)
+    # main(data_df, tree_type)
     # main_k_fold(data_df)
+    gender_study(data_df)

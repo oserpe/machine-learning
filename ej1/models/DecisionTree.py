@@ -204,7 +204,7 @@ class DecisionTree:
         g = Network(height='100%', width='100%',
                     notebook=True, layout='hierarchical')
 
-        g.from_nx(self.tree)
+        g.from_nx(self.tree, node_size_transf=lambda x: 20)
 
         g.show('tree.html')
 
@@ -275,11 +275,11 @@ class DecisionTree:
         class_mode = dataset[self.classes_column_name].mode()[0]
 
         self.create_and_set_node(node_type=NodeType.LEAF, value=class_mode,
-                                 depth=current_node["node_depth"], id=node_id, tree=pruned_tree)
-        edge_label = self.tree.get_edge_data(
-            previous_node_id, node_id)["label"]
-        pruned_tree.add_edge(previous_node_id, node_id,
-                             label=edge_label, color="red")
+                                depth=current_node["node_depth"], id=node_id, tree=pruned_tree)
+        edge_label = self.tree.get_edge_data(previous_node_id, node_id)["label"]
+        pruned_tree.add_edge(previous_node_id, node_id, label=edge_label
+        # , color="red"
+        )
 
         new_error = self.calculate_error(dataset, pruned_tree)
         if new_error < current_error:

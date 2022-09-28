@@ -28,7 +28,7 @@ def create_rate_boxplot(dataset, class_column):
 
 def main_k_fold(dataset):
     # load the model
-    knn = KNN([], [], k_neighbors=5, weighted=True)
+    knn = KNN([], [], k_neighbors=20, weighted=False)
     rand = random.randint(1,10000)
     dataset = dataset.sample(frac=1, random_state=rand).reset_index(drop=True)
 
