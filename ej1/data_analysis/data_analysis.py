@@ -1,8 +1,35 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from ..models.DecisionTree import DecisionTree
+from ...metrics import Metrics
 from ...data_categorization import categorize_data_with_equal_frequency, categorize_data_with_equal_width
 import numpy as np
 # plot histogram of creditability, using a red bin for 0 and blue bin for 1
+
+
+def plot_k_fold_k_evolution_metrics_dt(dataset, k_range):
+    for k in k_range:
+        tree = DecisionTree()
+
+        # get dataset without class column
+        x = dataset.drop(tree.classes_column_name, axis=1)
+
+        # get dataset dataframe with only class column
+        y = dataset[[tree.classes_column_name]]
+
+        # call n-k-fold cross validation
+        avg_metrics, std_metrics = Metrics.n_k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
+        ), model=tree, x_column_names=x.columns, y_column_names=y.columns, n=3, k=k)
+
+        # print results
+        print("Average metrics:")
+        print(avg_metrics)
+
+        print("Standard deviation metrics:")
+        print(std_metrics)
+
+        Metrics.plot_metrics_heatmap_std(avg_metrics, std_metrics)
 
 
 def plot_creditability_histogram(dataset: pd.DataFrame):
@@ -60,7 +87,8 @@ if __name__ == "__main__":
     # plot_general_histogram(data_df)
     # plot_discretized_attribute_histogram(
     #     data_df, "Duration of Credit (month)", 6)
-    plot_discretized_attribute_histogram(data_df, "Credit Amount", 10)
+    # plot_discretized_attribute_histogram(data_df, "Credit Amount", 10)
+    plot_k_fold_k_evolution_metrics_dt(data_df, [2, 5, 8, 10])
     # plot_discretized_attribute_histogram(data_df, "Age (years)", 7)
     plt.show(block=True)
 

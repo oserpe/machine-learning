@@ -1,5 +1,7 @@
 import pandas as pd
 
+from ..data_categorization import categorize_data_with_equal_frequency
+
 from .gender_study import gender_study
 
 from .models.TreeType import TreeType
@@ -79,16 +81,17 @@ def main_k_fold(dataset: pd.DataFrame):
         tree.classes, avg_metrics, std_metrics, path="./machine-learning/ej1/dump/avg_std_metrics.csv")
 
 
-def main(dataset: pd.DataFrame, tree_type: TreeType):
+def main(dataset: pd.DataFrame, tree_type: TreeType, prune: bool = False):
     tree = tree_type.get_tree()
 
     # get train and test datasets
-    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
 
     tree.train(train_dataset)
 
     # prune
-    # tree.prune(test_dataset)
+    if prune:
+        tree.prune(test_dataset)
 
     if (tree_type == TreeType.DECISION_TREE):
         tree.draw()

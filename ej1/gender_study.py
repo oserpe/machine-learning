@@ -1,4 +1,3 @@
-from turtle import color
 import pandas as pd
 from ..metrics import Metrics
 from .models.TreeType import TreeType
@@ -36,8 +35,9 @@ def color_solution_path(tree, goal_node):
 def gender_study(data_df: pd.DataFrame):
     gender_study_analytics(data_df)
 
-    decision_tree = DecisionTree(classes=[1,2,3,4], classes_column_name=SEX_AND_MARITAL_STATUS_COLUMN)
-    
+    decision_tree = DecisionTree(
+        classes=[1, 2, 3, 4], classes_column_name=SEX_AND_MARITAL_STATUS_COLUMN)
+
     # get train and test datasets
     train_dataset, test_dataset = Metrics.holdout(data_df, test_size=0.3)
 
@@ -46,7 +46,8 @@ def gender_study(data_df: pd.DataFrame):
     # prune
     decision_tree.prune(test_dataset)
     tree = decision_tree.tree
-    leaf_nodes = [tree.nodes[x] for x in tree.nodes() if tree.out_degree(x)==0]
+    leaf_nodes = [tree.nodes[x]
+                  for x in tree.nodes() if tree.out_degree(x) == 0]
 
     for leaf in leaf_nodes:
         if leaf["node_value"] == str(WOMAN_CLASSIFICATION_VALUE):
@@ -60,11 +61,12 @@ def gender_study(data_df: pd.DataFrame):
 
     # # smaller nodes and fonts
     # plt.figure(2)
-    # nx.draw(decision_tree.tree,node_size=60,font_size=8) 
+    # nx.draw(decision_tree.tree,node_size=60,font_size=8)
 
     decision_tree.draw()
 
     return
+
 
 def gender_study_analytics(data_df: pd.DataFrame):
     gender_column = "Sex & Marital Status"
@@ -102,4 +104,3 @@ def gender_study_analytics(data_df: pd.DataFrame):
     print(f"En los hombres el porcentaje de los que no tienen most valuable asset es: ",
           round(len(male_data_df[male_data_df[most_valuable_asset_column] <= 1]) /
                 len(male_data_df), 2))
-                
