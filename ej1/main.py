@@ -1,5 +1,7 @@
 import pandas as pd
 
+from ..data_categorization import categorize_data_with_equal_frequency
+
 from .gender_study import gender_study
 
 from .models.TreeType import TreeType
@@ -7,6 +9,37 @@ from .models.DecisionTree import DecisionTree
 from .models.RandomForest import RandomForest
 from ..metrics import Metrics
 import matplotlib.pyplot as plt
+
+
+def metrics_per_prune_method(dataset):
+    tree_pruned = DecisionTree()
+    tree_depth = DecisionTree(max_depth=3)
+    tree_nodes = DecisionTree(max_node_count=65)
+
+    # get dataset without class column
+    x = dataset.drop(tree_pruned.classes_column_name, axis=1)
+
+    # get dataset dataframe with only class column
+    y = dataset[[tree_pruned.classes_column_name]]
+
+
+    method_names = ["Pruned", "Max depth", "Max node count"]
+    method_trees= [tree_pruned, tree_depth, tree_nodes]
+    for index, method in enumerate(method_names):
+        tree = method_trees[index]
+
+        results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
+        ), model=tree, x_column_names=x.columns, y_column_names=y.columns, k=5, prune=method == "Pruned")
+
+        # print results
+        print("Average metrics:")
+        print(avg_metrics)
+
+        print("Standard deviation metrics:")
+        print(std_metrics)
+
+        Metrics.plot_metrics_heatmap_std(avg_metrics, std_metrics)
+            
 
 
 def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_estimators: int = 10, samples_per_bag_frac: float = 1):
@@ -248,6 +281,8 @@ if __name__ == "__main__":
     # main(data_df, tree_type)
     # main_k_fold(data_df)
     # plot_preprune_methods_accuracy(data_df)
+    # plot_preprune_methods_accuracy(data_df)
+    metrics_per_prune_method(data_df)
     # main_n_k_fold(data_df)
     # gender_study(data_df)
-    main_n_estimators_rf(data_df)
+    # main_n_estimators_rf(data_df)
