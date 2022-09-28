@@ -1,4 +1,5 @@
 import math
+from statistics import mode
 
 from .DecisionTree import DecisionTree
 import pandas as pd
@@ -34,7 +35,7 @@ class RandomForest:
 
     def classify(self, sample: pd.DataFrame):
         votes = [tree.classify(sample) for tree in self.trees]
-        return max(set(votes), key=votes.count)
+        return mode(votes)
 
     def test(self, dataset: pd.DataFrame, prediction_column: str) -> pd.DataFrame:
         print("####################")
