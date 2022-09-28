@@ -15,7 +15,8 @@ def create_rate_boxplot(dataset, class_column):
     for rate in groupby_data_df.groups.keys():
         classification.append(groupby_data_df.get_group(
             rate)['wordcount'].values)
-        labels.append(rate)
+        labels.append(rate)    
+        print(groupby_data_df.get_group(rate)['wordcount'].mean())
 
     fig, axes = plt.subplots(figsize=(10, 5))
     axes.boxplot(classification)
@@ -24,7 +25,43 @@ def create_rate_boxplot(dataset, class_column):
 
     plt.show()
 
-    print(groupby_data_df.get_group(1)['wordcount'].mean())
+def create_k_evolution_boxplot(dataset, class_column):
+    # get train and test dataset
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
+
+    # get train dataset x and y values
+    x_train = train_dataset.drop(class_column, axis=1)
+    y_train = train_dataset[[class_column]]
+
+    x_test = test_dataset.drop(class_column, axis=1)
+    y_test = test_dataset[[class_column]]
+
+    labels = [1, 2, 3, 4, 5]
+    k_range = range(1, 70, 2)
+    # colors for methods
+    colors = ["red", "blue", "green", "orange", "purple", "brown", "pink", "gray", "olive", "cyan"]
+    for index, weighted in enumerate([True, False]):
+        precision = []
+        for K in k_range:
+            # load the model
+            knn = KNN(x_train, y_train, k_neighbors=K, weighted=weighted)
+            # test the model
+            results = knn.test(x_test)
+            # get metrics
+            y_predictions = results[knn.predicted_class_column_name].values.tolist()
+            y = y_test[knn.class_column].values.tolist()
+            cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
+            metrics, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
+
+            precision.append(metrics[1]["precision"])
+
+        plt.plot(list(k_range), precision, label="Weighted" if weighted else "Not weighted",
+                linestyle='--', marker='o', color=colors[(index*2) % len(colors)])
+
+    plt.legend()
+    plt.xlabel("Neighbours considered")
+    plt.ylabel("Precision")
+    plt.show()
 
 def main_k_fold(dataset):
     # load the model
@@ -154,7 +191,6 @@ if __name__ == "__main__":
     data_completed_df = pd.concat([complete_df, incomplete_df], axis=0)
 
     # main(data_completed_df)
-    main_k_fold(data_completed_df)
+    # main_k_fold(data_completed_df)
     # create_rate_boxplot(data_completed_df, "Star Rating")
-
-
+    create_k_evolution_boxplot(data_completed_df, "Star Rating")

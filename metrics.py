@@ -106,6 +106,7 @@ class Metrics:
         }
 
         for fold in folds:
+            print("Evaluating fold...")
             # Train the model
             x_train = fold['x_train']
             y_train = fold['y_train']
@@ -138,6 +139,117 @@ class Metrics:
                 
 
         return results, errors, k_metrics_per_class, average_metrics, std_metrics
+
+    @staticmethod
+    def n_k_fold_cross_validation_eval(x, y, n, model, k: int, x_column_names: list = None, y_column_names: list = None):
+        if model is None:
+            raise ValueError("Model cannot be None")
+
+        # Evaluate the model on each fold
+        k_metrics_per_class = {
+            'accuracy': {label: [] for label in model.classes},
+            'precision': {label: [] for label in model.classes},
+            'recall': {label: [] for label in model.classes},
+            'f1-score': {label: [] for label in model.classes},
+            'tp-rate': {label: [] for label in model.classes},
+            'fp-rate': {label: [] for label in model.classes},
+        }
+
+        avg_std_metrics = {
+            'accuracy': {label: [] for label in model.classes},
+            'precision': {label: [] for label in model.classes},
+            'recall': {label: [] for label in model.classes},
+            'f1-score': {label: [] for label in model.classes},
+            'tp-rate': {label: [] for label in model.classes},
+            'fp-rate': {label: [] for label in model.classes},
+        }
+
+
+        for i in range(n):
+            print(f'Evaluating fold {i+1} of {n}...')
+            # Evaluate the model on each fold
+            n_results, n_errors, n_k_metrics_per_class, n_average_metrics, n_std_metrics = Metrics.k_fold_cross_validation_eval(
+                x, y, model, k, x_column_names=x_column_names, y_column_names=y_column_names)
+
+            # Push the average metrics of the n-k-fold to the total metrics
+            for metric_label in k_metrics_per_class:
+                for label in model.classes:
+                    k_metrics_per_class[metric_label][label].append(n_average_metrics[metric_label][label])
+                    avg_std_metrics[metric_label][label].append(n_std_metrics[metric_label][label])
+
+        # Compute the average and standard deviation metrics
+        average_metrics = {metric_label: {label: np.mean(k_metrics_per_class[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
+        std_metrics = {metric_label: {label: np.mean(avg_std_metrics[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
+
+        return average_metrics, std_metrics
+
+    @staticmethod
+    def plot_metrics_heatmap(metrics: dict, plot_title=""):
+        # get keys are the column labels
+        columns = list(metrics.keys())
+
+        # get the rows labels
+        rows = list(metrics[columns[0]].keys())
+
+        # get the values for every row
+        values = []
+        for row in rows:
+            values.append([metrics[column][row] for column in columns])
+
+        # prepare the labels
+        labels = []
+        for i in range(len(rows)):
+            labels.append([f"{values[i][j]:.3f}" for j in range(len(columns))])
+
+        # get tha yticks
+        yticks = [f"{row}" for row in rows]
+
+        # get the xticks
+        xticks = [f"{column}" for column in columns]
+
+        # plot the heatmap with the labels
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, yticklabels=yticks, vmin=0, vmax=1)
+        ax.set_title(plot_title)
+        plt.show()
+
+
+    @staticmethod
+    def plot_metrics_heatmap_std(avg_metrics: dict, std_metrics: dict, plot_title=""):
+        # get keys are the column labels
+        columns = list(avg_metrics.keys())
+
+        # get the rows labels
+        rows = list(avg_metrics[columns[0]].keys())
+
+        # get the values for every row
+        values = []
+        for row in rows:
+            values.append([avg_metrics[column][row] for column in columns])
+
+        rows = list(std_metrics[columns[0]].keys())
+
+        # get the error values for every row
+        error_values = []
+        for row in rows:
+            error_values.append([std_metrics[column][row] for column in columns])
+
+        # prepare the labels
+        labels = []
+        for i in range(len(rows)):
+            labels.append([f"{values[i][j]:.3f} ± {error_values[i][j]:.3f}" for j in range(len(columns))])
+
+        # get tha yticks
+        yticks = [f"{row}" for row in rows]
+
+        # get the xticks
+        xticks = [f"{column}" for column in columns]
+
+        # plot the heatmap with the labels
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, yticklabels=yticks, vmin=0, vmax=1)
+        ax.set_title(plot_title)
+        plt.show()
 
     @staticmethod
     def avg_and_std_metrics_to_csv(classes: list, avg_metrics, std_metrics, path = "./dump/metrics.csv"):
