@@ -317,7 +317,7 @@ class DecisionTree:
     def s_precision(self, dataset: pd.DataFrame) -> float:
         return (dataset[self.predicted_class_column_name] == dataset[self.classes_column_name]).sum() / len(dataset)
 
-    def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth=1, max_depth=10) -> dict:
+    def s_precision_per_depth(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_depth=1, max_depth=7) -> dict:
         results = {}
         for depth in range(initial_depth, max_depth + 1):
 
@@ -355,9 +355,9 @@ class DecisionTree:
         return results
 
     def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame,
-                                   initial_node_count: int = 10, max_node_count=100, prune=False) -> dict:
+                                   initial_node_count: int = 5, max_node_count=500, prune=False) -> dict:
         results = {}
-        step_size = 100
+        step_size = 30
         for node_count in range(initial_node_count, max_node_count + step_size + 1, step_size):
             self.min_samples_split = -1
             self.max_node_count = node_count
@@ -389,6 +389,43 @@ class DecisionTree:
                 }
 
         return results
+
+    def plot_precision_per_node_count_multiple_results(self, results_list: list, method_names: list):
+        annotation_position_multiplier = -1
+        
+        train_s_precisions_by_method = {}
+        test_s_precisions_by_method = {}
+        node_counts_by_method = {}
+        # colors for methods
+        colors = ["red", "blue", "green", "orange", "purple", "brown", "pink", "gray", "olive", "cyan"]
+        for index, method in enumerate(method_names):
+            train_s_precisions_by_method[method] = []
+            test_s_precisions_by_method[method] = []
+            node_counts_by_method[method] = []
+            results = results_list[index]
+            for node_count in results:
+                node_counts_by_method[method].append(node_count)
+                train_s_precisions_by_method[method].append(results[node_count]["train_s_precision"])
+                test_s_precisions_by_method[method].append(results[node_count]["test_s_precision"])
+                if "depth" in method:
+                    # add depth value to both points
+                    plt.annotate(f'd: {results[node_count]["depth"]}', (node_count ,
+                                results[node_count]["train_s_precision"] + 0.015 * -annotation_position_multiplier))
+                    plt.annotate(f'd: {results[node_count]["depth"]}', (node_count ,
+                                results[node_count]["test_s_precision"] + 0.015 * annotation_position_multiplier))
+                annotation_position_multiplier *= -1
+
+            plt.plot(node_counts_by_method[method], train_s_precisions_by_method[method], label="Train "+ method,
+                    linestyle='--', marker='o', color=colors[(index*2) % len(colors)])
+            plt.plot(node_counts_by_method[method], test_s_precisions_by_method[method], label="Test "+ method,
+                    linestyle='--', marker='o', color=colors[(index*2 +1) % len(colors)])
+
+        plt.legend()
+        plt.xlabel("Node count")
+        plt.ylabel("Precision")
+        plt.ylim(top=1.1)
+        plt.show()
+
 
     def plot_precision_per_node_count(self, results: dict):
         train_s_precisions = []

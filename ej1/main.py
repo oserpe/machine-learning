@@ -106,7 +106,7 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     tree.train(train_dataset)
 
     # prune
-    tree.prune(test_dataset)
+    # tree.prune(test_dataset)
 
     if(tree_type == TreeType.DECISION_TREE):
         tree.draw()
@@ -163,6 +163,19 @@ def main_n_k_fold(dataset: pd.DataFrame):
     Metrics.avg_and_std_metrics_to_csv(
         tree.classes, avg_metrics, std_metrics, path=f"./machine-learning/ej1/dump/{tree.tree_type}_n_avg_std_metrics.csv")
 
+def plot_preprune_methods_accuracy(dataset):
+    tree = DecisionTree()
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
+
+    method_names = ["Max depth", "Max node count"]
+    results_list = [
+        tree.s_precision_per_depth(train_dataset, test_dataset),
+        tree.s_precision_per_node_count(train_dataset, test_dataset),
+    ]
+
+    tree.plot_precision_per_node_count_multiple_results(results_list, method_names)
+
+
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
@@ -184,5 +197,7 @@ if __name__ == "__main__":
     # print(data_df["Age (years)"].value_counts())
 
     # main(data_df, tree_type)
-    main_n_k_fold(data_df)
+    # main_k_fold(data_df)
+    plot_preprune_methods_accuracy(data_df)
+    # main_n_k_fold(data_df)
     # gender_study(data_df)

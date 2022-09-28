@@ -53,7 +53,8 @@ class RandomForest:
             results.append(tree.test(dataset, prediction_column))
         return results
 
-    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count=100, prune=False) -> dict:
+    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, 
+                                initial_node_count: int = 10, max_node_count = 100, prune=False) -> dict:
         # for every estimator get the associated precision
         results = {}
         for i in range(self.n_estimators):
