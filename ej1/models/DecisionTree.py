@@ -47,7 +47,6 @@ def information_gain(dataset, parent_entropy, attribute_column, attribute_values
         dataset_given_attribute_value = dataset[(
             dataset[attribute_column] == attribute_value)]
 
-        # TODO: maybe apply laplace correction
         if len(dataset_given_attribute_value) == 0:
             continue
 

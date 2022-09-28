@@ -213,7 +213,10 @@ class Metrics:
 
         # plot the heatmap with the labels
         fig, ax = plt.subplots(figsize=(10, 10))
-        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, yticklabels=yticks, vmin=0, vmax=1)
+        print(labels)
+        print(values)
+        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, 
+                        yticklabels=yticks, vmin=0, vmax=1)
         ax.set_title(plot_title)
         plt.show()
 
@@ -391,20 +394,40 @@ class Metrics:
 
     @staticmethod
     def get_metrics_per_class(cf_matrix) -> Tuple[dict, pd.DataFrame]:
-        metrics = {}
-        for label in cf_matrix.columns:
-            metrics[label] = {
-                'accuracy': Metrics.get_accuracy_for_class(cf_matrix, label),
-                'precision': Metrics.get_precision_for_class(cf_matrix, label),
-                'recall': Metrics.get_recall_for_class(cf_matrix, label),
-                'f1-score': Metrics.get_f1_score_for_class(cf_matrix, label),
-                'tp-rate': Metrics.get_tp_rate_for_class(cf_matrix, label),
-                'fp-rate': Metrics.get_fp_rate_for_class(cf_matrix, label)
-            }
+        k_metrics_per_class = {
+            'accuracy': {label:0 for label in cf_matrix.columns},
+            'precision': {label: 0 for label in cf_matrix.columns},
+            'recall': {label: 0 for label in cf_matrix.columns},
+            'f1-score': {label: 0 for label in cf_matrix.columns},
+            'tp-rate': {label: 0 for label in cf_matrix.columns},
+            'fp-rate': {label: 0 for label in cf_matrix.columns},
+        }
+
+        for metric in k_metrics_per_class:
+            for label in cf_matrix.columns:
+                if metric == 'accuracy':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_accuracy_for_class(cf_matrix, label)
+                elif metric == 'precision':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_precision_for_class(cf_matrix, label)
+                elif metric == 'recall':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_recall_for_class(cf_matrix, label)
+                elif metric == 'f1-score':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_f1_score_for_class(cf_matrix, label)
+                elif metric == 'tp-rate':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_tp_rate_for_class(cf_matrix, label)
+                elif metric == 'fp-rate':
+                    k_metrics_per_class[metric][label]=\
+                        Metrics.get_fp_rate_for_class(cf_matrix, label)
 
         # Build a dataframe from the metrics dictionary
-        df = pd.DataFrame.from_dict(metrics, orient='index')
-        return metrics, df
+        df = pd.DataFrame.from_dict(k_metrics_per_class, orient='index')
+        print(k_metrics_per_class)
+        return k_metrics_per_class, df
         
     @staticmethod
     def get_roc_confusion_matrix_for_class(model, x, y, label, threshold):

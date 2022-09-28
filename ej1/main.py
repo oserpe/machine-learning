@@ -28,6 +28,7 @@ def metrics_per_prune_method(dataset):
     for index, method in enumerate(method_names):
         tree = method_trees[index]
 
+        # call n-k-fold cross validation
         results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(x.values.tolist(), y.values.tolist(
         ), model=tree, x_column_names=x.columns, y_column_names=y.columns, k=5, prune=method == "Pruned")
 
@@ -264,7 +265,7 @@ if __name__ == "__main__":
         "./machine-learning/ej1/dataset/german_credit.csv", header=0, sep=',')
 
     #main_test_and_plot_cf_matrix_random_forest_trees(data_df, n_estimators=3)
-    tree_type = TreeType.DECISION_TREE
+    tree_type = TreeType.RANDOM_FOREST
     categorical_columns = {
         # Quantity picked arbitrarily for this dataset taking into account that it separates the data in categories of the closest amount
         "Duration of Credit (month)": 6,
@@ -279,11 +280,11 @@ if __name__ == "__main__":
     # print(data_df["Credit Amount"].value_counts())
     # print(data_df["Age (years)"].value_counts())
 
-    # main(data_df, tree_type)
+    main(data_df, tree_type)
     # main_k_fold(data_df)
     # plot_preprune_methods_accuracy(data_df)
     # plot_preprune_methods_accuracy(data_df)
-    metrics_per_prune_method(data_df)
+    # metrics_per_prune_method(data_df)
     # main_n_k_fold(data_df)
     # gender_study(data_df)
     # main_n_estimators_rf(data_df)
