@@ -7,16 +7,15 @@ import matplotlib.pyplot as plt
 
 
 class RandomForest:
-    def __init__(self, n_estimators=10, samples_per_bag_frac=1, max_node_count=math.inf, tree_type = None):
+    def __init__(self, n_estimators=10, samples_per_bag_frac=1, max_node_count=math.inf, tree_type=None):
         self.n_estimators = n_estimators
         self.samples_per_bag_frac = samples_per_bag_frac
         self.max_node_count = max_node_count
 
-        self.trees = [DecisionTree(max_node_count=self.max_node_count) for _ in range(self.n_estimators)]
+        self.trees = [DecisionTree(max_node_count=self.max_node_count)
+                      for _ in range(self.n_estimators)]
 
         self.tree_type = tree_type
-
-
 
     def bagging(self, dataset: pd.DataFrame):
         return dataset.sample(frac=self.samples_per_bag_frac, replace=True)
@@ -32,7 +31,6 @@ class RandomForest:
 
             print(f"Tree {i+1} of {self.n_estimators} trained")
             print("####################")
-            self.trees.append(tree)
 
     def classify(self, sample: pd.DataFrame):
         votes = [tree.classify(sample) for tree in self.trees]
@@ -55,7 +53,7 @@ class RandomForest:
             results.append(tree.test(dataset, prediction_column))
         return results
 
-    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count = 100, prune=False) -> dict:
+    def s_precision_per_node_count(self, train_dataset: pd.DataFrame, test_dataset: pd.DataFrame, initial_node_count: int = 10, max_node_count=100, prune=False) -> dict:
         # for every estimator get the associated precision
         results = {}
         for i in range(self.n_estimators):
@@ -106,9 +104,9 @@ class RandomForest:
 
         # plot the results
         plt.errorbar(x, train_y, label="Train",
-                  yerr=train_std, ecolor='blue', marker='o', color="red", elinewidth=0.5, capsize=5, linestyle='--')
+                     yerr=train_std, ecolor='blue', marker='o', color="red", elinewidth=0.5, capsize=5, linestyle='--')
         plt.errorbar(x, test_y, label="Test",
-                  yerr=test_std, ecolor='red', marker='o', color="blue", elinewidth=0.5, capsize=5, linestyle='--')
+                     yerr=test_std, ecolor='red', marker='o', color="blue", elinewidth=0.5, capsize=5, linestyle='--')
         plt.legend()
         plt.xlabel("Node count")
         plt.ylabel("Precision")
