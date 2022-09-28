@@ -7,6 +7,7 @@ from .models.KNN import KNN
 from ..metrics import Metrics
 import matplotlib.pyplot as plt
 
+
 def create_rate_boxplot(dataset, class_column):
     groupby_data_df = dataset.groupby(class_column)
 
@@ -15,7 +16,7 @@ def create_rate_boxplot(dataset, class_column):
     for rate in groupby_data_df.groups.keys():
         classification.append(groupby_data_df.get_group(
             rate)['wordcount'].values)
-        labels.append(rate)    
+        labels.append(rate)
         print(groupby_data_df.get_group(rate)['wordcount'].mean())
 
     fig, axes = plt.subplots(figsize=(10, 5))
@@ -24,6 +25,7 @@ def create_rate_boxplot(dataset, class_column):
     axes.set_title("Boxplot de cantidad de palabras por rate")
 
     plt.show()
+
 
 def create_k_evolution_boxplot(dataset, class_column):
     # get train and test dataset
@@ -39,7 +41,8 @@ def create_k_evolution_boxplot(dataset, class_column):
     labels = [1, 2, 3, 4, 5]
     k_range = range(1, 70, 2)
     # colors for methods
-    colors = ["red", "blue", "green", "orange", "purple", "brown", "pink", "gray", "olive", "cyan"]
+    colors = ["red", "blue", "green", "orange", "purple",
+              "brown", "pink", "gray", "olive", "cyan"]
     for index, weighted in enumerate([True, False]):
         precision = []
         for K in k_range:
@@ -48,7 +51,8 @@ def create_k_evolution_boxplot(dataset, class_column):
             # test the model
             results = knn.test(x_test)
             # get metrics
-            y_predictions = results[knn.predicted_class_column_name].values.tolist()
+            y_predictions = results[knn.predicted_class_column_name].values.tolist(
+            )
             y = y_test[knn.class_column].values.tolist()
             cf_matrix = Metrics.get_confusion_matrix(y, y_predictions, labels)
             metrics, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
@@ -56,17 +60,18 @@ def create_k_evolution_boxplot(dataset, class_column):
             precision.append(metrics[1]["precision"])
 
         plt.plot(list(k_range), precision, label="Weighted" if weighted else "Not weighted",
-                linestyle='--', marker='o', color=colors[(index*2) % len(colors)])
+                 linestyle='--', marker='o', color=colors[(index*2) % len(colors)])
 
     plt.legend()
     plt.xlabel("Neighbours considered")
     plt.ylabel("Precision")
     plt.show()
 
+
 def main_k_fold(dataset):
     # load the model
     knn = KNN([], [], k_neighbors=20, weighted=False)
-    rand = random.randint(1,10000)
+    rand = random.randint(1, 10000)
     dataset = dataset.sample(frac=1, random_state=rand).reset_index(drop=True)
 
     # get dataset x and y values
@@ -74,7 +79,7 @@ def main_k_fold(dataset):
     y = dataset[[knn.classes_column_name]]
 
     results, errors, metrics, avg_metrics, std_metrics = Metrics.k_fold_cross_validation_eval(
-        x.values.tolist(), y.values.tolist(), 
+        x.values.tolist(), y.values.tolist(),
         model=knn, x_column_names=x.columns, y_column_names=y.columns, k=5)
 
     # print results
@@ -91,7 +96,8 @@ def main_k_fold(dataset):
     print(std_metrics)
 
     # save to csv
-    Metrics.avg_and_std_metrics_to_csv(knn.classes, avg_metrics, std_metrics, path="./machine-learning/ej2/dump/avg_std_metrics.csv")
+    Metrics.avg_and_std_metrics_to_csv(
+        knn.classes, avg_metrics, std_metrics, path="./machine-learning/ej2/dump/avg_std_metrics.csv")
 
 
 def main(dataset):
@@ -136,7 +142,6 @@ def main(dataset):
     # save to csv
     metrics_df.to_csv("./machine-learning/ej2/dump/metrics.csv")
 
-
     # X = dataset.drop(class_column, axis=1)
     # Y = dataset[[class_column]]
 
@@ -156,6 +161,31 @@ def main(dataset):
     #     dataset = pd.concat([dataset, sample])
 
 
+def knn_impute(dataset, class_column, k):
+    complete_df = dataset[~dataset.isna().any(axis=1)]
+    incomplete_df = dataset[dataset.isna().any(axis=1)]
+
+    # get train dataset x and y values
+    x_train = complete_df.drop(class_column, axis=1)
+    y_train = complete_df[[class_column]]
+
+    # load the model
+    knn = KNN(x_train, y_train, k_neighbors=k, weighted=True,
+              classes_column_name=class_column)
+
+    # get incomplete without NaN column
+    incomplete_df = incomplete_df.drop(class_column, axis=1)
+
+    # add predicted class column
+    incomplete_df[class_column] = knn.test(
+        incomplete_df)[knn.predicted_class_column_name]
+
+    # concat complete and incomplete
+    imputed_df = pd.concat([complete_df, incomplete_df], axis=0)
+
+    return imputed_df
+
+
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/ej2/dataset/reviews_sentiment.csv", header=0, sep=';')
@@ -169,28 +199,11 @@ if __name__ == "__main__":
     text_columns = ["Review Title", "Review Text"]
     numerical_data_df = data_df.drop(text_columns, axis=1)
 
-    class_column = "titleSentiment"
+    missing_data_column = "titleSentiment"
 
-    complete_df = numerical_data_df[~numerical_data_df.isna().any(axis=1)]
-    incomplete_df = numerical_data_df[numerical_data_df.isna().any(axis=1)]
-
-    # get train dataset x and y values
-    x_train = complete_df.drop(class_column, axis=1)
-    y_train = complete_df[[class_column]]
-
-    # load the model
-    knn = KNN(x_train, y_train, k_neighbors=20, weighted=True, classes_column_name=class_column)
-
-    # get incomplete without NaN column
-    incomplete_df = incomplete_df.drop(class_column, axis=1)
-
-    # add predicted class column
-    incomplete_df[class_column] = knn.test(incomplete_df)[knn.predicted_class_column_name]
-
-    # concat complete and incomplete
-    data_completed_df = pd.concat([complete_df, incomplete_df], axis=0)
+    imputed_df = knn_impute(numerical_data_df, missing_data_column, k=20)
 
     # main(data_completed_df)
     # main_k_fold(data_completed_df)
     # create_rate_boxplot(data_completed_df, "Star Rating")
-    create_k_evolution_boxplot(data_completed_df, "Star Rating")
+    create_k_evolution_boxplot(imputed_df, "Star Rating")

@@ -8,24 +8,6 @@ from .models.RandomForest import RandomForest
 from ..metrics import Metrics
 
 
-def categorize_data_with_equal_frequency(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
-    categorized_data = data_df.copy()
-
-    for column, q in columns.items():
-        categorized_data[column], range = pd.qcut(
-            data_df[column], q=q, labels=False, retbins=True)
-        # print(range) # print ranges of current discretization, starting from minimum value until the last range that ends on the maximum value
-    return categorized_data, range
-
-
-def categorize_data_with_equal_width(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
-    for column, bins in columns.items():
-        data_df[column] = pd.cut(
-            data_df[column], bins, labels=False)
-
-    return data_df
-
-
 def main_test_and_plot_cf_matrix_random_forest_trees(dataset: pd.DataFrame, n_estimators: int = 10, samples_per_bag_frac: float = 1):
     tree = RandomForest(n_estimators, samples_per_bag_frac)
 
@@ -108,12 +90,12 @@ def main(dataset: pd.DataFrame, tree_type: TreeType):
     # prune
     # tree.prune(test_dataset)
 
-    if(tree_type == TreeType.DECISION_TREE):
+    if (tree_type == TreeType.DECISION_TREE):
         tree.draw()
 
-    # test 
+    # test
     results = tree.test(test_dataset)
-    
+
     # print metrics
     # get the prediction column values
     y_predictions = results[tree.predicted_class_column_name].values.tolist()
@@ -163,6 +145,7 @@ def main_n_k_fold(dataset: pd.DataFrame):
     Metrics.avg_and_std_metrics_to_csv(
         tree.classes, avg_metrics, std_metrics, path=f"./machine-learning/ej1/dump/{tree.tree_type}_n_avg_std_metrics.csv")
 
+
 def plot_preprune_methods_accuracy(dataset):
     tree = DecisionTree()
     train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.3)
@@ -173,7 +156,8 @@ def plot_preprune_methods_accuracy(dataset):
         tree.s_precision_per_node_count(train_dataset, test_dataset),
     ]
 
-    tree.plot_precision_per_node_count_multiple_results(results_list, method_names)
+    tree.plot_precision_per_node_count_multiple_results(
+        results_list, method_names)
 
 
 if __name__ == "__main__":

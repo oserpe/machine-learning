@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from ..main import categorize_data_with_equal_frequency, categorize_data_with_equal_width
+from ...data_categorization import categorize_data_with_equal_frequency, categorize_data_with_equal_width
 import numpy as np
 # plot histogram of creditability, using a red bin for 0 and blue bin for 1
 
