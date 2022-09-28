@@ -184,7 +184,38 @@ class Metrics:
         return average_metrics, std_metrics
 
     @staticmethod
-    def plot_metrics_heatmap(avg_metrics: dict, std_metrics: dict, plot_title=""):
+    def plot_metrics_heatmap(metrics: dict, plot_title=""):
+        # get keys are the column labels
+        columns = list(metrics.keys())
+
+        # get the rows labels
+        rows = list(metrics[columns[0]].keys())
+
+        # get the values for every row
+        values = []
+        for row in rows:
+            values.append([metrics[column][row] for column in columns])
+
+        # prepare the labels
+        labels = []
+        for i in range(len(rows)):
+            labels.append([f"{values[i][j]:.3f}" for j in range(len(columns))])
+
+        # get tha yticks
+        yticks = [f"{row}" for row in rows]
+
+        # get the xticks
+        xticks = [f"{column}" for column in columns]
+
+        # plot the heatmap with the labels
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, yticklabels=yticks, vmin=0, vmax=1)
+        ax.set_title(plot_title)
+        plt.show()
+
+
+    @staticmethod
+    def plot_metrics_heatmap_std(avg_metrics: dict, std_metrics: dict, plot_title=""):
         # get keys are the column labels
         columns = list(avg_metrics.keys())
 
@@ -216,7 +247,7 @@ class Metrics:
 
         # plot the heatmap with the labels
         fig, ax = plt.subplots(figsize=(10, 10))
-        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='Blues', xticklabels=xticks, yticklabels=yticks)
+        ax = sns.heatmap(values, annot=labels, fmt = '', cmap='RdYlGn', xticklabels=xticks, yticklabels=yticks, vmin=0, vmax=1)
         ax.set_title(plot_title)
         plt.show()
 

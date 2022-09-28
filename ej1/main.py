@@ -157,7 +157,7 @@ def main_n_k_fold(dataset: pd.DataFrame):
     print("Standard deviation metrics:")
     print(std_metrics)
 
-    Metrics.plot_metrics_heatmap(avg_metrics, std_metrics)
+    Metrics.plot_metrics_heatmap_std(avg_metrics, std_metrics)
 
     # save to csv
     Metrics.avg_and_std_metrics_to_csv(
