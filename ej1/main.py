@@ -6,6 +6,7 @@ from .models.TreeType import TreeType
 from .models.DecisionTree import DecisionTree
 from .models.RandomForest import RandomForest
 from ..metrics import Metrics
+import matplotlib.pyplot as plt
 
 
 def categorize_data_with_equal_frequency(data_df: pd.DataFrame, columns: dict[str, int]) -> pd.DataFrame:
@@ -95,6 +96,70 @@ def main_k_fold(dataset: pd.DataFrame):
     # save to csv
     Metrics.avg_and_std_metrics_to_csv(
         tree.classes, avg_metrics, std_metrics, path="./machine-learning/ej1/dump/avg_std_metrics.csv")
+
+
+def s_precision(y, y_predictions):
+    positives_count = 0
+    for y_pred, y_true in zip(y_predictions, y):
+        if y_pred == y_true:
+            positives_count += 1
+
+    return positives_count / len(y_predictions)
+
+def main_n_estimators_rf(dataset: pd.DataFrame):
+
+    class_column = "Creditability"
+
+    # get train and test datasets
+    train_dataset, test_dataset = Metrics.holdout(dataset, test_size=0.2)
+
+    estimators = [2, 5, 10, 20, 30, 40]
+
+    s_test_precisions = []
+    s_train_precisions = []
+
+    prediction_column = "Classification"
+
+    for n_estimators in estimators:
+        tree = RandomForest(n_estimators)
+
+        tree.train(train_dataset, class_column)
+
+        # test training set
+        results = tree.test(train_dataset, prediction_column)
+
+        # get the prediction column values
+        y_predictions = results[prediction_column].values.tolist()
+
+        # get the class column values
+        y = results[class_column].values.tolist()
+
+        s_train_precisions.append(s_precision(y, y_predictions))
+
+        # test
+        results = tree.test(test_dataset, prediction_column)
+
+        # get the prediction column values
+        y_predictions = results[prediction_column].values.tolist()
+
+        # get the class column values
+        y = results[class_column].values.tolist()
+
+        s_test_precisions.append(s_precision(y, y_predictions))
+
+
+    # plot precisions
+    plt.plot(estimators, s_train_precisions, label="Train",
+                linestyle='--', marker='o', color='r')
+
+    plt.plot(estimators, s_test_precisions, label="Test",
+                 linestyle='--', marker='o', color='b')
+    plt.legend()
+    plt.xlabel("Tree count")
+    plt.ylabel("Precision")
+    plt.title("Precision vs tree count")
+    plt.ylim(top=1.1)
+    plt.show()
 
 
 def main(dataset: pd.DataFrame, tree_type: TreeType):
@@ -198,6 +263,7 @@ if __name__ == "__main__":
 
     # main(data_df, tree_type)
     # main_k_fold(data_df)
-    plot_preprune_methods_accuracy(data_df)
+    # plot_preprune_methods_accuracy(data_df)
     # main_n_k_fold(data_df)
     # gender_study(data_df)
+    main_n_estimators_rf(data_df)
