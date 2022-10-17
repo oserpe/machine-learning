@@ -27,10 +27,11 @@ def get_data_from_images(images_data):
 
 def test_smv(X_train, X_test, y_train, y_test, kernel, C=1, gamma='scale'):
     clf = svm.SVC(kernel=kernel, C=C, gamma=gamma)
+    print(f"SVM {kernel} started training")
     clf.fit(X_train, y_train)
-    print(f"SVM {kernel} FITTED")
+    print(f"SVM {kernel} trained")
 
-    return clf.score(X_test, y_test)
+    return model_selection.cross_val_score(clf, X_test, y_test, cv=5).mean()
 
 
 def test_different_smv_kernels(X_train, X_test, y_train, y_test):
@@ -40,6 +41,7 @@ def test_different_smv_kernels(X_train, X_test, y_train, y_test):
     for kernel in kernels:
         print(f"Testing {kernel} kernel")
         scores.append(test_smv(X_train, X_test, y_train, y_test, kernel))
+        print("%0.2f accuracy with a standard deviation of %0.2f" % (scores[-1].mean(), scores[-1].std()))
         print(f"Score for kernel {kernel}: {scores[-1]}")
     
     return scores
@@ -92,22 +94,16 @@ if __name__ == "__main__":
 
     X, y = get_data_from_images(images_data)
 
-    # Shuffle the data
-    X, y = utils.shuffle(X, y, random_state=random_state)
-
     # Separate data into training and test data
     X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.33, random_state=random_state)
-    print("READY TO FIT")
+
+    # --- EXERCISES ---
 
     # Test different kernels
-    # test_different_smv_kernels(X_train, X_test, y_train, y_test)
+    test_different_smv_kernels(X_train, X_test, y_train, y_test)
 
     # Test different C values
     # test_different_smv_C(X_train, X_test, y_train, y_test)
 
-    # Predict pixels classes
-    svm_image_classification(X_train, y_train, images_directory + "image3.jpg")
-
-        
-
-
+    # Predict image pixels classes
+    # svm_image_classification(X_train, y_train, images_directory + "image3.jpg")
