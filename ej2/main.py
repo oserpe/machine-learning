@@ -1,8 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt, test
-from PIL import Image
+from PIL import Image, ImageColor
 from enum import Enum
 from sklearn import svm, model_selection, utils
+import seaborn as sns
 
 
 class ImageClasses(Enum):
@@ -56,6 +57,28 @@ def test_different_smv_C(X_train, X_test, y_train, y_test):
     return scores
 
 
+def svm_image_classification(X_train, y_train, image_path):
+    print("Creating svm classificator")
+    clf = svm.SVC(kernel='rbf', C=10, gamma='scale')
+    clf.fit(X_train, y_train)
+
+    print("Starting image classification")
+    img = Image.open(image_path)
+    # Colors for each class: green, lightblue and brown
+    colors = [(0, 255, 0), (0, 255, 255), (165, 42, 42)]
+
+    # Classify pixels
+    pixels_class = clf.predict(img.getdata())
+    # Get color of each pixel by their predicted class
+    pixels_new_color = [colors[pixel_class] for pixel_class in pixels_class]
+
+    print("Creating new image")
+    new_img = Image.new(img.mode, img.size)
+    new_img.putdata(pixels_new_color)
+
+    new_img.show()
+
+
 if __name__ == "__main__":
     random_state = 1
     X = []
@@ -80,5 +103,11 @@ if __name__ == "__main__":
     # test_different_smv_kernels(X_train, X_test, y_train, y_test)
 
     # Test different C values
-    test_different_smv_C(X_train, X_test, y_train, y_test)
+    # test_different_smv_C(X_train, X_test, y_train, y_test)
+
+    # Predict pixels classes
+    svm_image_classification(X_train, y_train, images_directory + "image3.jpg")
+
+        
+
 
