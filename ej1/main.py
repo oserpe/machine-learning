@@ -15,7 +15,7 @@ def generate_line_interval(m, b, interval):
 def plot_ej_a(X, y, m, b, interval, seed):
     # Classify the points using the perceptron
     perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
-                                  tol=0.01, random_state=seed)
+                                  tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X, y)
 
@@ -65,11 +65,10 @@ def plot_ej_b(X, y, interval):
     
     # Get the closest positive point and calculate second support hyperplane using the previous one
     pos_point = points_distance_positive_class[0][1]
-    pos_point_distance_to_margin = abs((new_m * pos_point[0] - pos_point[1] + new_b) / np.sqrt(new_m ** 2 + 1))
-    pos_support_hyp = [new_m, -1, new_b + pos_point_distance_to_margin]
-
+    pos_support_hyp = [new_m, -1, pos_point[1] - new_m * pos_point[0]]
+    pos_hyp_b = pos_point[1] - new_m * pos_point[0]
     # Find the optimum hyperplane using previous support hyperplanes
-    optimum_hyperplane = [new_m, -1, new_b + pos_point_distance_to_margin / 2]
+    optimum_hyperplane = [new_m, -1, (new_b + pos_hyp_b) / 2]
 
     support_points_x = [neg_point1[0], neg_point2[0], pos_point[0]]
     support_points_y = [neg_point1[1], neg_point2[1], pos_point[1]]
