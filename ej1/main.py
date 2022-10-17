@@ -1,7 +1,8 @@
+import math
 from turtle import left
 import numpy as np
 from sklearn.model_selection import GridSearchCV
-
+import itertools
 from ..models.SVM import SVM
 from .dataset.generate_dataset import generate_linearly_separable, generate_not_linearly_separable
 from matplotlib import pyplot as plt
@@ -56,26 +57,55 @@ def plot_ej_b(X, y, interval):
     points_distance_negative_class.sort(key=lambda x: x[0])
     points_distance_positive_class.sort(key=lambda x: x[0])
 
-    # Get the two closest negative points and calculate first support hyperplane
-    neg_point1, neg_point2 = list(map(lambda x: x[1], points_distance_negative_class[:2]))
-    new_m = (neg_point1[1] - neg_point2[1]) / (neg_point1[0] - neg_point2[0])
-    new_b = neg_point1[1] - new_m * neg_point1[0]
 
-    neg_support_hyp = [new_m, -1, new_b]
-    
-    # Get the closest positive point and calculate second support hyperplane using the previous one
-    pos_point = points_distance_positive_class[0][1]
-    pos_support_hyp = [new_m, -1, pos_point[1] - new_m * pos_point[0]]
-    pos_hyp_b = pos_point[1] - new_m * pos_point[0]
-    # Find the optimum hyperplane using previous support hyperplanes
-    optimum_hyperplane = [new_m, -1, (new_b + pos_hyp_b) / 2]
+    # Find the hyperplane with the biggest margin
+    max_confidence_margin = 0
+    best_hyperplane_data = {
+        'support_points_x': [],
+        'support_points_y': [],
+        'optimum_hyperplane_data': [],
+        'support_hyperplanes_data': [],
+    } 
 
-    support_points_x = [neg_point1[0], neg_point2[0], pos_point[0]]
-    support_points_y = [neg_point1[1], neg_point2[1], pos_point[1]]
-    plt.scatter(support_points_x, support_points_y, c="orange", s=90)
-    plot_data(X, y, interval, [neg_support_hyp, pos_support_hyp, optimum_hyperplane, [m, -1, b]],
-              title="New hyperplane", colors=['blue', 'blue', 'green', 'red'], 
-              labels=['Support line', 'Support line', 'Optimum', 'Perceptron'])
+    # Iterate over all possible combinations of support points
+    for two_points_class_val in [-1, 1]:
+        if two_points_class_val < 0:
+            two_points_class = points_distance_negative_class
+            one_point_class = points_distance_positive_class
+        else:
+            two_points_class = points_distance_positive_class
+            one_point_class = points_distance_negative_class
+
+        # Get the two closest points of the two_points_class and calculate first support hyperplane
+        line_support_point1, line_support_point2 = list(map(lambda x: x[1], two_points_class[:2]))
+        new_m = (line_support_point1[1] - line_support_point2[1]) / (line_support_point1[0] - line_support_point2[0])
+        new_b = line_support_point1[1] - new_m * line_support_point1[0]
+
+        first_support_hyp = [new_m, -1, new_b]
+        
+        # Get the closest point of the other class and calculate second support hyperplane using the previous one
+        other_support_point = one_point_class[0][1]
+        other_support_hyp = [new_m, -1, other_support_point[1] - new_m * other_support_point[0]]
+        other_hyp_b = other_support_point[1] - new_m * other_support_point[0]
+        # Find the optimum hyperplane using previous support hyperplanes
+        optimum_hyperplane = [new_m, -1, (new_b + other_hyp_b) / 2]
+
+        # Find if this hyperplane margin is better than the previous one, if so, save its data
+        new_confidence_margin = abs(new_b - other_hyp_b) / 2
+        if new_confidence_margin > max_confidence_margin:
+            max_confidence_margin = new_confidence_margin
+            best_hyperplane_data = {
+                'support_points_x': [line_support_point1[0], line_support_point2[0], other_support_point[0]],
+                'support_points_y': [line_support_point1[1], line_support_point2[1], other_support_point[1]],
+                'optimum_hyperplane_data': optimum_hyperplane,
+                'support_hyperplanes_data': [first_support_hyp, other_support_hyp],
+            }
+
+
+    plt.scatter(best_hyperplane_data['support_points_x'], best_hyperplane_data['support_points_y'], c="orange", s=90)
+    plot_data(X, y, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
+              title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
+              labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
 
 
 def plot_ej_c(X, y, interval, seed):
@@ -166,19 +196,19 @@ if __name__ == "__main__":
     n = 100
 
     X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
-    plot_ej_a(X, y, m, b, interval, seed)
+    # plot_ej_a(X, y, m, b, interval, seed)
     plot_ej_b(X, y, interval)
     
 
-    noise_prox = 0.2
-    noise_prob = 0.5
-    non_sep_X, non_sep_y = generate_not_linearly_separable(
-        n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
+    # noise_prox = 0.2
+    # noise_prob = 0.5
+    # non_sep_X, non_sep_y = generate_not_linearly_separable(
+    #     n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
 
-    plot_ej_c(non_sep_X, non_sep_y, interval, seed)
+    # plot_ej_c(non_sep_X, non_sep_y, interval, seed)
 
-    plot_ej_d_sep(X, y, m, b, interval, seed)
-    plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
+    # plot_ej_d_sep(X, y, m, b, interval, seed)
+    # plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
 
 # seed 1, prox 0.1, prob 0.5 - parece no linealmente separable
 # seed 2, prox 0.1, prob 0.5 idem, mejor que 1

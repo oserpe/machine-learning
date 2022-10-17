@@ -41,7 +41,7 @@ def test_different_smv_kernels(X_train, X_test, y_train, y_test):
     for kernel in kernels:
         print(f"Testing {kernel} kernel")
         scores.append(test_smv(X_train, X_test, y_train, y_test, kernel))
-        print("%0.2f accuracy with a standard deviation of %0.2f" % (scores[-1].mean(), scores[-1].std()))
+        print("%0.6f accuracy with a standard deviation of %0.6f" % (scores[-1].mean(), scores[-1].std()))
         print(f"Score for kernel {kernel}: {scores[-1]}")
     
     return scores
