@@ -1,3 +1,4 @@
+from turtle import left
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 
@@ -104,15 +105,19 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
     if title:
         plt.title(title)
 
+    plt.ylim(top=interval[1])
+    plt.ylim(bottom=interval[0])
+    plt.xlim(right=interval[1])
+    plt.xlim(left=interval[0])
     plt.show()
 
 
 if __name__ == "__main__":
     seed = 2
-    interval = [-1, 1]
+    interval = [0, 5]
     n = 100
 
-    X, y, m, b = generate_linearly_separable(n, interval, seed)
+    X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
     plot_ej_a(X, y, m, b, interval, seed)
 
     noise_prox = 0.2
