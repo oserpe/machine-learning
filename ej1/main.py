@@ -29,6 +29,55 @@ def plot_ej_a(X, y, m, b, interval, seed):
     plot_data(X, y, interval, [[*perceptron.w_, perceptron.b_], [m, -1, b]],
               title="Perceptron classification with linearly separable dataset", colors=['green', 'red'], labels=['Predicted', 'Real'])
 
+def plot_ej_b(X, y, interval):
+    # Classify the points using the perceptron
+    perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
+                                  tol=0.01, random_state=seed, verbose=False)
+
+    perceptron.fit(X, y)
+
+    # Find distances of points of each class to the hyperplane of the perceptron
+    points_distance_positive_class = []
+    points_distance_negative_class = []
+
+    m = -perceptron.w_[0] / perceptron.w_[1]
+    b = (-perceptron.b_ / perceptron.w_[1])[0]
+    for x_i in X:
+        y_i_predicted = perceptron.predict([x_i])[0]
+        distance = abs((m * x_i[0] - x_i[1] + b) / np.sqrt(m ** 2 + 1))
+        
+        point_with_distance = (distance, x_i)
+        if y_i_predicted == 1:
+            points_distance_positive_class.append(point_with_distance)
+        else:
+            points_distance_negative_class.append(point_with_distance)
+
+    # sort distances arrays
+    points_distance_negative_class.sort(key=lambda x: x[0])
+    points_distance_positive_class.sort(key=lambda x: x[0])
+
+    # Get the two closest negative points and calculate first support hyperplane
+    neg_point1, neg_point2 = list(map(lambda x: x[1], points_distance_negative_class[:2]))
+    new_m = (neg_point1[1] - neg_point2[1]) / (neg_point1[0] - neg_point2[0])
+    new_b = neg_point1[1] - new_m * neg_point1[0]
+
+    neg_support_hyp = [new_m, -1, new_b]
+    
+    # Get the closest positive point and calculate second support hyperplane using the previous one
+    pos_point = points_distance_positive_class[0][1]
+    pos_point_distance_to_margin = abs((new_m * pos_point[0] - pos_point[1] + new_b) / np.sqrt(new_m ** 2 + 1))
+    pos_support_hyp = [new_m, -1, new_b + pos_point_distance_to_margin]
+
+    # Find the optimum hyperplane using previous support hyperplanes
+    optimum_hyperplane = [new_m, -1, new_b + pos_point_distance_to_margin / 2]
+
+    support_points_x = [neg_point1[0], neg_point2[0], pos_point[0]]
+    support_points_y = [neg_point1[1], neg_point2[1], pos_point[1]]
+    plt.scatter(support_points_x, support_points_y, c="orange", s=90)
+    plot_data(X, y, interval, [neg_support_hyp, pos_support_hyp, optimum_hyperplane, [m, -1, b]],
+              title="New hyperplane", colors=['blue', 'blue', 'green', 'red'], 
+              labels=['Support line', 'Support line', 'Optimum', 'Perceptron'])
+
 
 def plot_ej_c(X, y, interval, seed):
     # Classify the points using the perceptron
@@ -119,6 +168,8 @@ if __name__ == "__main__":
 
     X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
     plot_ej_a(X, y, m, b, interval, seed)
+    plot_ej_b(X, y, interval)
+    
 
     noise_prox = 0.2
     noise_prob = 0.5
