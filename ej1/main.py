@@ -1,7 +1,7 @@
 import math
 from turtle import left
 import numpy as np
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 import itertools
 from ..models.SVM import SVM
 from .dataset.generate_dataset import generate_linearly_separable, generate_not_linearly_separable
@@ -30,12 +30,12 @@ def plot_ej_a(X, y, m, b, interval, seed):
     plot_data(X, y, interval, [[*perceptron.w_, perceptron.b_], [m, -1, b]],
               title="Perceptron classification with linearly separable dataset", colors=['green', 'red'], labels=['Predicted', 'Real'])
 
-def plot_ej_b(X, y, interval):
+def plot_ej_b(X_train, X_test, y_train, y_test, interval):
     # Classify the points using the perceptron
     perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
 
-    perceptron.fit(X, y)
+    perceptron.fit(X_train, y_train)
 
     # Find distances of points of each class to the hyperplane of the perceptron
     points_distance_positive_class = []
@@ -43,7 +43,7 @@ def plot_ej_b(X, y, interval):
 
     m = -perceptron.w_[0] / perceptron.w_[1]
     b = (-perceptron.b_ / perceptron.w_[1])[0]
-    for x_i in X:
+    for x_i in X_train:
         y_i_predicted = perceptron.predict([x_i])[0]
         distance = abs((m * x_i[0] - x_i[1] + b) / np.sqrt(m ** 2 + 1))
         
@@ -103,7 +103,12 @@ def plot_ej_b(X, y, interval):
 
 
     plt.scatter(best_hyperplane_data['support_points_x'], best_hyperplane_data['support_points_y'], c="orange", s=90)
-    plot_data(X, y, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
+    plot_data(X_train, y_train, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
+              title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
+              labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
+
+
+    plot_data(X_test, y_test, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
               title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
               labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
 
@@ -193,11 +198,14 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 if __name__ == "__main__":
     seed = 2
     interval = [0, 5]
-    n = 100
+    n = 200
 
     X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
+
+
     # plot_ej_a(X, y, m, b, interval, seed)
-    plot_ej_b(X, y, interval)
+    plot_ej_b(X_train, X_test, y_train, y_test, interval)
     
 
     # noise_prox = 0.2
