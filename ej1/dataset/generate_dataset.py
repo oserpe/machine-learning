@@ -1,8 +1,9 @@
 import math
+from matplotlib import pyplot as plt
 import numpy as np
 
 
-def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperplane_margin=0.2, required_distance_percentage=0.2):
+def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperplane_margin=0.2, required_distance_percentage=0.2, interval_compression_rate=0.8):
     np.random.seed(seed)
 
     # Generate random line
@@ -37,7 +38,15 @@ def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperp
             b = np.random.uniform(interval[0], interval[1])
 
     # Generate random samples
-    X = np.random.uniform(interval[0], interval[1], (n, 2))
+    # If clustering is True, the samples are generated in two clusters compressing the interval
+    if clustering:
+        upper_bound = interval[1] * interval_compression_rate
+        lower_bound = interval[0] * \
+            interval_compression_rate if interval[0] > 1 else 1 * (0.5 + interval_compression_rate)
+        X = np.random.uniform(
+            lower_bound, upper_bound, (n, 2))
+    else:
+        X = np.random.uniform(interval[0], interval[1], (n, 2))
 
     # Generate labels
     y = np.array([1 if x[1] > m * x[0] + b else -1 for x in X])
@@ -60,7 +69,7 @@ def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperp
     return X, y, m, b
 
 
-def generate_not_linearly_separable(n, interval, noise_proximity, noise_probability, seed=None, clustering=False, hyperplane_margin=0.2, required_distance_percentage=0.2):
+def generate_not_linearly_separable(n, interval, noise_proximity, noise_probability, seed=None, clustering=True, hyperplane_margin=0.2, required_distance_percentage=0.2):
 
     # Generate random samples
     X, y, m, b = generate_linearly_separable(

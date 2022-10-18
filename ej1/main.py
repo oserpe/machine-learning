@@ -171,24 +171,24 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 if __name__ == "__main__":
     seed = 2
     interval = [0, 5]
-    n = 200
+    n = 300
 
     X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
 
 
     # plot_ej_a(X, y, m, b, interval, seed)
-    # plot_ej_b(X_train, X_test, y_train, y_test, interval)
+    plot_ej_b(X_train, X_test, y_train, y_test, interval)
     
 
-    noise_prox = 0.2
-    noise_prob = 0.5
-    non_sep_X, non_sep_y = generate_not_linearly_separable(
-        n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
+    # noise_prox = 0.2
+    # noise_prob = 0.5
+    # non_sep_X, non_sep_y = generate_not_linearly_separable(
+    #     n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
 
     # plot_ej_c(non_sep_X, non_sep_y, interval, seed)
 
-    plot_ej_d_sep(X, y, m, b, interval, seed)
+    # plot_ej_d_sep(X, y, m, b, interval, seed)
     # plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, seed)
     # plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
 
