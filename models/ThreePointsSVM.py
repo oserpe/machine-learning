@@ -28,7 +28,9 @@ class ThreePointsSVM(BaseEstimator):
         points_distance_negative_class.sort(key=lambda x: x[0])
         points_distance_positive_class.sort(key=lambda x: x[0])
 
-
+        # Save the perceptron confidence for study purposes
+        self.perceptron_confidence = min(points_distance_positive_class[0][0], points_distance_negative_class[0][0])
+        
         # Find the hyperplane with the biggest margin
         self.confidence_margin = 0
 

@@ -39,7 +39,7 @@ def plot_ej_a(X, y, m, b, interval, seed):
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     # Classify the points using the perceptron
-    perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
+    perceptron = SimplePerceptron(eta=0.01, max_iter=10000, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X_train, y_train)
@@ -49,24 +49,26 @@ def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     three_points_svm = ThreePointsSVM()
     three_points_svm.fit(X_train, y_train, [m, b])
 
-    plt.scatter(three_points_svm.support_points_x, three_points_svm.support_points_y, c="orange", s=90)
+    plt.scatter(three_points_svm.support_points_x, three_points_svm.support_points_y, c="violet", s=170)
 
     # find accuracy
     y_pred = three_points_svm.predict(X_test)
     accuracy = np.sum(y_pred == y_test) / len(y_test)
     print("test accuracy: ", accuracy)
 
-    # TRAIN
+    # TRAIN HYPERPLANE
     plot_data(X_train, y_train, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-              title="Optimal hyperplane with training dataset", colors=['green', 'blue', 'blue', 'red'], 
+              title="Optimal hyperplane", colors=['green', 'blue', 'blue', 'red'], 
               styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
               labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
+    print("Optimal hyperplane confidence: ", three_points_svm.confidence_margin)
+    print("Perceptron confidence: ", three_points_svm.perceptron_confidence)
     # TEST
-    plot_data(X_test, y_test, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-              title="Optimal hyperplane with test dataset", colors=['green', 'blue', 'blue', 'red'], 
-              styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
-              labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
+    # plot_data(X_test, y_test, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
+    #           title="Optimal hyperplane with test dataset", colors=['green', 'blue', 'blue', 'red'], 
+    #           styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
+    #           labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
 def plot_ej_c(X, y, interval, seed):
     # Classify the points using the perceptron
@@ -181,7 +183,7 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 
 
 if __name__ == "__main__":
-    seed = 3
+    seed = 4
     interval = [0, 5]
     n = 200
 
@@ -190,7 +192,7 @@ if __name__ == "__main__":
 
 
     # plot_ej_a(X, y, m, b, interval, seed)
-    plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
+    plot_ej_b(X, X_test, y, y_test, interval, seed)
     
 
     # noise_prox = 0.2

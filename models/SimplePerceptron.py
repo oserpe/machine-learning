@@ -59,6 +59,7 @@ class SimplePerceptron(BaseEstimator):
     def predict(self, X):
         h = X @ self.w_ + self.b_
         y_hat = [1 if x >= 0 else -1 for x in h]
+        
         return y_hat
 
     def compute_error(self, X, y):
