@@ -54,15 +54,15 @@ def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
 
     # TRAIN
     plot_data(X_train, y_train, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-              title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
-              labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
+              title="Optimal hyperplane with training dataset", colors=['green', 'blue', 'blue', 'red'], 
+              styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
+              labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
     # TEST
     plot_data(X_test, y_test, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-              title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
-              labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
-
-
+              title="Optimal hyperplane with test dataset", colors=['green', 'blue', 'blue', 'red'], 
+              styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
+              labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
 def plot_ej_c(X, y, interval, seed):
     # Classify the points using the perceptron
@@ -145,15 +145,23 @@ def plot_ej_d_non_sep(X, y, interval, seed):
               title="SVM classification with not linearly separable dataset", labels=['Predicted'])
 
 
-def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] = None, title: str = None, colors: list[str] = None):
+def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] = None, title: str = None, 
+                colors: list[str] = None, styles: list[str] = None, with_support_hyperplanes: bool = False):
     plt.scatter(X[:, 0], X[:, 1], c=y)
 
     for i, hyperplane in enumerate(hyperplanes):
         m_hat = -hyperplane[0] / hyperplane[1]
         b_hat = -hyperplane[2] / hyperplane[1]
 
-        plt.plot(interval, generate_line_interval(
-            m_hat, b_hat, interval), color=colors[i] if colors else 'green', label=labels[i] if labels else None)
+        if with_support_hyperplanes and i == 1:
+            plt.plot(interval, generate_line_interval(
+                m_hat, b_hat, interval), color=colors[i], linestyle='--')
+        else:
+            plt.plot(interval, generate_line_interval(
+                m_hat, b_hat, interval), color=colors[i] if colors else 'green', label=labels[i] if labels else None,
+                linestyle=styles[i] if styles else '-')
+
+
 
     if labels:
         plt.legend()
@@ -177,8 +185,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
 
 
-    plot_ej_a(X, y, m, b, interval, seed)
-    # plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
+    # plot_ej_a(X, y, m, b, interval, seed)
+    plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
     
 
     # noise_prox = 0.2
