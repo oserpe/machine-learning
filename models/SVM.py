@@ -70,7 +70,9 @@ class SVM(BaseEstimator):
         return self
 
     def compute_error_derivative(self, X, y):
-        return self.w_ - self.c * np.sum(np.dot(X, y), axis=0), self.eta_b * self.c * (-np.sum(y, axis=0))
+        dw = self.w_ - self.c * np.dot(X, y)
+        db = self.eta_b * self.c * (-np.sum(y, axis=0))
+        return dw , db
 
     def compute_error(self, X, y):
         # Compute hinge loss (average)
@@ -83,3 +85,6 @@ class SVM(BaseEstimator):
 
     def predict(self, X):
         return np.sign(X @ self.w_ + self.b_)
+
+    def score(self, X, y):
+        return np.mean(self.predict(X) == y)
