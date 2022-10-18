@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperplane_margin=0.2, required_distance_percentage=0.2, interval_compression_rate=0.8):
+def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperplane_margin=0.2, required_distance_percentage=0.2, interval_compression_rate=0.9, n_compression_rate=0.8):
     np.random.seed(seed)
 
     # Generate random line
@@ -42,9 +42,12 @@ def generate_linearly_separable(n, interval, seed=None, clustering=False, hyperp
     if clustering:
         upper_bound = interval[1] * interval_compression_rate
         lower_bound = interval[0] * \
-            interval_compression_rate if interval[0] > 1 else 1 * (0.5 + interval_compression_rate)
+            interval_compression_rate if interval[0] > 1 else 1 * interval_compression_rate
+        n_clustered = int(n * n_compression_rate)
         X = np.random.uniform(
-            lower_bound, upper_bound, (n, 2))
+            lower_bound, upper_bound, (n_clustered, 2))
+        X = np.concatenate((X, np.random.uniform(
+            interval[0], interval[1], (n - n_clustered, 2))))
     else:
         X = np.random.uniform(interval[0], interval[1], (n, 2))
 

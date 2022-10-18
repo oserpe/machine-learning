@@ -30,10 +30,10 @@ def plot_ej_a(X, y, m, b, interval, seed):
     # (w0, w1) * (x, y) + b = 0
     # w0 x + w1 y + b = 0
     # y = -w0/w1 x - b/w1
-    plot_data(X, y, interval, [[*perceptron.w_, perceptron.b_], [m, -1, b]],
-              title="Perceptron classification with linearly separable dataset", colors=['green', 'red'], labels=['Predicted', 'Real'])
+    plot_data(X, y, interval, [[*perceptron.w_, perceptron.b_]],
+              title="Perceptron classification with linearly separable dataset", colors=['green'], labels=['Predicted'])
 
-def plot_ej_b(X_train, X_test, y_train, y_test, interval):
+def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     # Classify the points using the perceptron
     perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
@@ -169,16 +169,16 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 
 
 if __name__ == "__main__":
-    seed = 2
+    seed = 3
     interval = [0, 5]
-    n = 300
+    n = 200
 
     X, y, m, b = generate_linearly_separable(n, interval, seed, clustering=True, hyperplane_margin=0.5)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
 
 
-    # plot_ej_a(X, y, m, b, interval, seed)
-    plot_ej_b(X_train, X_test, y_train, y_test, interval)
+    plot_ej_a(X, y, m, b, interval, seed)
+    # plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
     
 
     # noise_prox = 0.2
