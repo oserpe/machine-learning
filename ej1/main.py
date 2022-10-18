@@ -3,7 +3,9 @@ from turtle import left
 import numpy as np
 from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 import itertools
-from sklearn.metrics import classification_report, confusion_matrix 
+from sklearn.metrics import classification_report, confusion_matrix
+
+from .plots import plot_n_k_fold_cv_eval 
 
 from ..models.SVM import SVM
 from ..models.ThreePointsSVM import ThreePointsSVM
@@ -32,6 +34,8 @@ def plot_ej_a(X, y, m, b, interval, seed):
     # y = -w0/w1 x - b/w1
     plot_data(X, y, interval, [[*perceptron.w_, perceptron.b_]],
               title="Perceptron classification with linearly separable dataset", colors=['green'], labels=['Predicted'])
+
+    plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)          
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     # Classify the points using the perceptron
