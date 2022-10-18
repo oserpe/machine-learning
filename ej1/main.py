@@ -3,10 +3,12 @@ from turtle import left
 import numpy as np
 from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 import itertools
+
 from ..models.SVM import SVM
+from ..models.ThreePointsSVM import ThreePointsSVM
+from ..models.SimplePerceptron import SimplePerceptron
 from .dataset.generate_dataset import generate_linearly_separable, generate_not_linearly_separable
 from matplotlib import pyplot as plt
-from ..models.SimplePerceptron import SimplePerceptron
 
 
 def generate_line_interval(m, b, interval):
@@ -36,81 +38,29 @@ def plot_ej_b(X_train, X_test, y_train, y_test, interval):
                                   tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X_train, y_train)
-
-    # Find distances of points of each class to the hyperplane of the perceptron
-    points_distance_positive_class = []
-    points_distance_negative_class = []
-
     m = -perceptron.w_[0] / perceptron.w_[1]
     b = (-perceptron.b_ / perceptron.w_[1])[0]
-    for x_i in X_train:
-        y_i_predicted = perceptron.predict([x_i])[0]
-        distance = abs((m * x_i[0] - x_i[1] + b) / np.sqrt(m ** 2 + 1))
-        
-        point_with_distance = (distance, x_i)
-        if y_i_predicted == 1:
-            points_distance_positive_class.append(point_with_distance)
-        else:
-            points_distance_negative_class.append(point_with_distance)
 
-    # sort distances arrays
-    points_distance_negative_class.sort(key=lambda x: x[0])
-    points_distance_positive_class.sort(key=lambda x: x[0])
+    three_points_svm = ThreePointsSVM()
+    three_points_svm.fit(X_train, y_train, [m, b])
 
+    plt.scatter(three_points_svm.support_points_x, three_points_svm.support_points_y, c="orange", s=90)
 
-    # Find the hyperplane with the biggest margin
-    max_confidence_margin = 0
-    best_hyperplane_data = {
-        'support_points_x': [],
-        'support_points_y': [],
-        'optimum_hyperplane_data': [],
-        'support_hyperplanes_data': [],
-    } 
+    # find accuracy
+    y_pred = three_points_svm.predict(X_test)
+    accuracy = np.sum(y_pred == y_test) / len(y_test)
+    print("test accuracy: ", accuracy)
 
-    # Iterate over all possible combinations of support points
-    for two_points_class_val in [-1, 1]:
-        if two_points_class_val < 0:
-            two_points_class = points_distance_negative_class
-            one_point_class = points_distance_positive_class
-        else:
-            two_points_class = points_distance_positive_class
-            one_point_class = points_distance_negative_class
-
-        # Get the two closest points of the two_points_class and calculate first support hyperplane
-        line_support_point1, line_support_point2 = list(map(lambda x: x[1], two_points_class[:2]))
-        new_m = (line_support_point1[1] - line_support_point2[1]) / (line_support_point1[0] - line_support_point2[0])
-        new_b = line_support_point1[1] - new_m * line_support_point1[0]
-
-        first_support_hyp = [new_m, -1, new_b]
-        
-        # Get the closest point of the other class and calculate second support hyperplane using the previous one
-        other_support_point = one_point_class[0][1]
-        other_support_hyp = [new_m, -1, other_support_point[1] - new_m * other_support_point[0]]
-        other_hyp_b = other_support_point[1] - new_m * other_support_point[0]
-        # Find the optimum hyperplane using previous support hyperplanes
-        optimum_hyperplane = [new_m, -1, (new_b + other_hyp_b) / 2]
-
-        # Find if this hyperplane margin is better than the previous one, if so, save its data
-        new_confidence_margin = abs(new_b - other_hyp_b) / 2
-        if new_confidence_margin > max_confidence_margin:
-            max_confidence_margin = new_confidence_margin
-            best_hyperplane_data = {
-                'support_points_x': [line_support_point1[0], line_support_point2[0], other_support_point[0]],
-                'support_points_y': [line_support_point1[1], line_support_point2[1], other_support_point[1]],
-                'optimum_hyperplane_data': optimum_hyperplane,
-                'support_hyperplanes_data': [first_support_hyp, other_support_hyp],
-            }
-
-
-    plt.scatter(best_hyperplane_data['support_points_x'], best_hyperplane_data['support_points_y'], c="orange", s=90)
-    plot_data(X_train, y_train, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
+    # TRAIN
+    plot_data(X_train, y_train, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
               title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
               labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
 
-
-    plot_data(X_test, y_test, interval, [best_hyperplane_data['optimum_hyperplane_data'], *best_hyperplane_data['support_hyperplanes_data'], [m, -1, b]],
+    # TEST
+    plot_data(X_test, y_test, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
               title="New hyperplane", colors=['green', 'blue', 'blue', 'red'], 
               labels=['Optimum', 'Support line', 'Support line', 'Perceptron'])
+
 
 
 def plot_ej_c(X, y, interval, seed):
