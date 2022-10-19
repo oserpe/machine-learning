@@ -108,7 +108,7 @@ def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
 
 def plot_ej_c(X_train, y_train, X_test, y_test, interval, seed, animate = False):
     # Classify the points using the perceptron
-    perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
+    perceptron = SimplePerceptron(eta=0.01, max_iter=1200, max_epochs=1000,
                                   tol=0.01, random_state=seed)
 
     perceptron.fit(X_train, y_train)
@@ -137,15 +137,14 @@ def plot_ej_c(X_train, y_train, X_test, y_test, interval, seed, animate = False)
     # plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)
 
     # PLOT: error by epoch
-    # y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
-    # # Add epochs number 0
-    # epochs = np.arange(0, perceptron.epochs + 1)
-    # plot_error_by_epoch(epochs, perceptron.error_epoch_list, y_test_error)
+    y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
+    plot_error_by_epoch(perceptron.epochs,
+                        perceptron.error_epoch_list, y_test_error)
 
     # PLOT: confusion matrix
-    y_pred = perceptron.predict(X_test)
-    cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
-    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    # y_pred = perceptron.predict(X_test)
+    # cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
+    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # PLOT: metrics
     # metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
@@ -178,7 +177,7 @@ def plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, 
 def plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed, animate=False):
     # Classify the points using the hinge loss SVM
     svm = SVM(c=1, max_iter=1000, random_state=seed, tol=0.01,
-              eta_w=1, eta_b=1, eta_decay_rate=0.005, verbose=True)
+              eta_w=0.01, eta_b=0.1, eta_decay_rate=0.005, verbose=True)
 
     svm.fit(X_train, y_train)
 
@@ -335,10 +334,10 @@ if __name__ == "__main__":
     #                            eta_w=0.01, eta_b=0.01, eta_decay_rate=0.1, verbose=True), X, X_test,
     #                        y, y_test, svm_grid_search_params)
 
-    plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
-    plot_ej_c(non_sep_X_train, non_sep_y_train, non_sep_X_test, non_sep_y_test, interval, seed)
+    # plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
+    # plot_ej_c(non_sep_X_train, non_sep_y_train, non_sep_X_test, non_sep_y_test, interval, seed)
 
-    # plot_ej_d_sep(X, y, m, b, interval, seed)
+    plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, seed)
     # plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
     # ej_d_non_sep_gridsearch(non_sep_X, non_sep_y, interval)

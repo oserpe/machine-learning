@@ -82,6 +82,7 @@ class SVM(BaseEstimator):
                     self.b_epoch_list, self.b_, axis=0)
                 self.error_epoch_list = np.append(
                     self.error_epoch_list, self.compute_error(X, y))
+                epoch += 1
 
         self.w_ = best_w
         self.b_ = best_b
@@ -111,7 +112,10 @@ class SVM(BaseEstimator):
         if b is None:
             b = self.b_
 
-        return np.sign(X @ self.w_ + self.b_)
+        h = X @ w + b
+        y_hat = [1 if x >= 0 else -1 for x in h]
+
+        return y_hat
 
     def predict_by_epoch(self, X):
         # For every epoch, calculate all the predictions for each sample in X
