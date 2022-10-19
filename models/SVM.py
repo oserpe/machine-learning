@@ -92,7 +92,7 @@ class SVM(BaseEstimator):
 
     def compute_error_derivative(self, X, y):
         dw = self.w_ - self.c * np.dot(X, y)
-        db = self.eta_b * self.c * (-np.sum(y, axis=0))
+        db = self.c * (-np.sum(y, axis=0))
         return dw, db
 
     def compute_error(self, X, y):
