@@ -224,7 +224,7 @@ def plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed, animate=Fals
     Metrics.plot_metrics_heatmap(metrics_per_class)
 
 
-def ej_d_non_sep_gridsearch(X, y, interval): 
+def ej_d_non_sep_gridsearch(X_train, y_train): 
     # defining parameter range
     param_grid = {'c': [0.01, 0.1, 1, 5, 10],
                   'max_iter': [1000, 10000],
@@ -236,29 +236,56 @@ def ej_d_non_sep_gridsearch(X, y, interval):
                         param_grid, refit=True, verbose=3, n_jobs=-1, cv=5)
 
     # fitting the model for grid search
-    grid.fit(X, y)
+    grid.fit(X_train, y_train)
 
     # print best parameter after tuning
     print(grid.best_params_)
 
 
-def plot_ej_d_non_sep(X, y, interval, seed):
+def plot_ej_d_non_sep(X_train, X_test, y_train, y_test, interval, seed, animate=False):
     # Classify the points using the hinge loss SVM
     svm = SVM(c=10, max_iter=10000, random_state=seed, tol=0.01,
-                            eta_w=0.01, eta_b=1, eta_decay_rate=0.01, verbose=False)
+                            eta_w=1, eta_b=0.1, eta_decay_rate=0.005, verbose=False)
 
-    svm.fit(X, y)
+    svm.fit(X_train, y_train)
 
     print("Error: ", svm.error_)
     print("W: ", svm.w_)
     print("B: ", svm.b_)
 
-    # (w0, w1) * (x, y) + b = 0
-    # w0 x + w1 y + b = 0
-    # y = -w0/w1 x - b/w1
+    if animate:
+        fig, ax = plt.subplots(1, 1)
 
-    plot_data(X, y, interval, [[*svm.w_, svm.b_]],
-              title="SVM classification with not linearly separable dataset", labels=['Predicted'])
+        # Plot the hyperplane animation
+        animate_func = get_animation_function(
+            svm, X_train, y_train, interval, ax, "Linear SVM classification with not linearly separable dataset")
+        anim = animation.FuncAnimation(fig, animate_func, frames=len(
+            svm.w_list), repeat=False, interval=25)
+
+
+        anim.save(
+            './machine-learning/ej1/dump/not_linearly_dataset_svm_animation.mp4', fps=20)
+        plt.show()
+    else:
+        plot_data(X_train, y_train, interval, [[*svm.w_, svm.b_]],
+                  title="SVM classification with not linearly separable dataset", colors=['green'], labels=['Predicted'])
+
+    # PLOT: n k fold cross validation
+    # plot_n_k_fold_cv_eval(X, y, 5, svm, k=5)
+
+    # PLOT: error by epoch
+    # y_test_error = svm.compute_error_by_epoch(X_test, y_test)
+    # plot_error_by_epoch(svm.epochs,
+    #                     svm.error_epoch_list, y_test_error)
+
+    # PLOT: confusion matrix
+    # y_pred = svm.predict(X_test)
+    # cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
+    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+
+    # PLOT: metrics
+    # metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
+    # Metrics.plot_metrics_heatmap(metrics_per_class)
 
 
 def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] = None, title: str = None,
@@ -337,10 +364,10 @@ if __name__ == "__main__":
     # plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_c(non_sep_X_train, non_sep_y_train, non_sep_X_test, non_sep_y_test, interval, seed)
 
-    plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
+    # plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, seed)
-    # plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
-    # ej_d_non_sep_gridsearch(non_sep_X, non_sep_y, interval)
+    plot_ej_d_non_sep(non_sep_X_train, non_sep_X_test, non_sep_y_train, non_sep_y_test, interval, seed)
+    # ej_d_non_sep_gridsearch(non_sep_X_train, non_sep_y_train)
 
 # seed 1, prox 0.1, prob 0.5 - parece no linealmente separable
 # seed 2, prox 0.1, prob 0.5 idem, mejor que 1
