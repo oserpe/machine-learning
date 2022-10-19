@@ -32,50 +32,48 @@ class ThreePointsSVM(BaseEstimator):
         self.perceptron_confidence = min(
             points_distance_positive_class[0][0], points_distance_negative_class[0][0])
 
-        # Find the hyperplane with the biggest margin
-        self.confidence_margin = 0
+        # The two support points of the same class are the ones with the smallest distance to the hyperplane
+        if points_distance_negative_class[1][0] < points_distance_positive_class[1][0]:
+            two_points_class = points_distance_negative_class
+            one_point_class = points_distance_positive_class
+        else:
+            two_points_class = points_distance_positive_class
+            one_point_class = points_distance_negative_class
 
-        # Iterate over all possible combinations of support points
-        for two_points_class_val in [-1, 1]:
-            if two_points_class_val < 0:
-                two_points_class = points_distance_negative_class
-                one_point_class = points_distance_positive_class
-            else:
-                two_points_class = points_distance_positive_class
-                one_point_class = points_distance_negative_class
+        # Get the two closest points of the two_points_class and calculate first support hyperplane
+        line_support_point1, line_support_point2 = list(
+            map(lambda x: x[1], two_points_class[:2]))
+        new_m = (line_support_point1[1] - line_support_point2[1]) / \
+            (line_support_point1[0] - line_support_point2[0])
+        new_b = line_support_point1[1] - new_m * line_support_point1[0]
 
-            # Get the two closest points of the two_points_class and calculate first support hyperplane
-            line_support_point1, line_support_point2 = list(
-                map(lambda x: x[1], two_points_class[:2]))
-            new_m = (line_support_point1[1] - line_support_point2[1]) / \
-                (line_support_point1[0] - line_support_point2[0])
-            new_b = line_support_point1[1] - new_m * line_support_point1[0]
+        first_support_hyp = [new_m, -1, new_b]
 
-            first_support_hyp = [new_m, -1, new_b]
+        # Get the closest point of the other class and calculate second support hyperplane using the previous one
+        other_support_point = one_point_class[0][1]
+        other_support_hyp = [
+            new_m, -1, other_support_point[1] - new_m * other_support_point[0]]
+        other_hyp_b = other_support_point[1] - \
+            new_m * other_support_point[0]
+        # Find the optimum hyperplane using previous support hyperplanes
+        optimum_hyperplane = [new_m, -1, (new_b + other_hyp_b) / 2]
 
-            # Get the closest point of the other class and calculate second support hyperplane using the previous one
-            other_support_point = one_point_class[0][1]
-            other_support_hyp = [
-                new_m, -1, other_support_point[1] - new_m * other_support_point[0]]
-            other_hyp_b = other_support_point[1] - \
-                new_m * other_support_point[0]
-            # Find the optimum hyperplane using previous support hyperplanes
-            optimum_hyperplane = [new_m, -1, (new_b + other_hyp_b) / 2]
-
-            # Find if this hyperplane margin is better than the previous one, if so, save its data
-            x = [points_distance_positive_class[0],
-                 points_distance_negative_class[0]].sort(key=lambda x: x[0])[1]
-            new_confidence_margin = self._calculate_distance_to_hyperplane(
-                x, optimum_hyperplane)
-            if new_confidence_margin > self.confidence_margin:
-                self.confidence_margin = new_confidence_margin
-                self.support_points_x = [
-                    line_support_point1[0], line_support_point2[0], other_support_point[0]]
-                self.support_points_y = [
-                    line_support_point1[1], line_support_point2[1], other_support_point[1]]
-                self.optimum_hyperplane_data = optimum_hyperplane
-                self.support_hyperplanes_data = [
-                    first_support_hyp, other_support_hyp]
+        # Find if this hyperplane margin is better than the previous one, if so, save its data
+        print(points_distance_negative_class[0])
+        closest_points = [points_distance_positive_class[0],
+                points_distance_negative_class[0]]
+        closest_points.sort(key=lambda x: x[0])
+        x = closest_points[0][1]
+        new_confidence_margin = self._calculate_distance_to_hyperplane(
+            x, optimum_hyperplane)
+        self.confidence_margin = new_confidence_margin
+        self.support_points_x = [
+            line_support_point1[0], line_support_point2[0], other_support_point[0]]
+        self.support_points_y = [
+            line_support_point1[1], line_support_point2[1], other_support_point[1]]
+        self.optimum_hyperplane_data = optimum_hyperplane
+        self.support_hyperplanes_data = [
+            first_support_hyp, other_support_hyp]
 
     def _calculate_distance_to_hyperplane(self, x, hyperplane):
         m = hyperplane[0]
