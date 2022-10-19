@@ -4,8 +4,9 @@ from PIL import Image, ImageColor
 from enum import Enum
 from sklearn import svm, model_selection, utils
 import seaborn as sns
-from .plots import plot_n_k_fold_cv_eval 
+from .plots import plot_data_3d, plot_n_k_fold_cv_eval 
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+from ..models.Metrics import Metrics
 
 
 class ImageClasses(Enum):
@@ -37,28 +38,34 @@ def test_svm(X_train, X_test, y_train, y_test, kernel, C=1, gamma='scale'):
 
 
 def test_different_svm_kernels(X_train, X_test, y_train, y_test):
-    kernels = ['linear', 'poly', 'rbf', 'sigmoid']
     
     scores = []
     for kernel in kernels:
-        print(f"Testing {kernel} kernel")
-        scores.append(test_svm(X_train, X_test, y_train, y_test, kernel))
-        print("%0.6f accuracy with a standard deviation of %0.6f" % (scores[-1].mean(), scores[-1].std()))
-        print(f"Score for kernel {kernel}: {scores[-1]}")
+        print(f"Testing kernel={kernel}")
+        clf = svm.SVC(kernel=kernel, C=1)
+        print(f"SVM started training")
+        clf.fit(X_train, y_train)
+
+        y_pred = clf.predict(X_test)
+        cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [0, 1, 2])
+        Metrics.plot_confusion_matrix_heatmap(cf_matrix)
     
     return scores
 
 
 def test_different_svm_C(X_train, X_test, y_train, y_test):
-    C_values = [0.1, 1, 10, 100, 1000]
+    C_values = [0.1, 1, 10, 100]
     
-    scores = []
     for C in C_values:
         print(f"Testing C={C}")
-        scores.append(test_svm(X_train, X_test, y_train, y_test, 'rbf', C=C))
-        print(f"Score for C={C}: {scores[-1]}")
+        clf = svm.SVC(kernel='rbf', C=C)
+        print(f"SVM started training")
+        clf.fit(X_train, y_train)
+
+        y_pred = clf.predict(X_test)
+        cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [0, 1, 2])
+        Metrics.plot_confusion_matrix_heatmap(cf_matrix)
     
-    return scores
 
 
 def test_different_parameters_grid_search(X_train, X_test, y_train, y_test):
@@ -99,6 +106,16 @@ def svm_image_classification(X_train, y_train, image_path):
     new_img.show()
 
 
+def plot_3d_data(X, y):
+
+    # get x,y,z from X
+    points_x = np.array([pixel[0] for pixel in X])
+    points_y = np.array([pixel[1] for pixel in X])
+    points_z = np.array([pixel[2] for pixel in X])
+    points_class = np.array(y)
+    plot_data_3d(points_x, points_y, points_z, points_class)
+
+
 if __name__ == "__main__":
     random_state = 1
     X = []
@@ -117,11 +134,11 @@ if __name__ == "__main__":
     # plot_n_k_fold_cv_eval(X, y, 5, svm.SVC(kernel='rbf', C=1), k=5)       
 
     # Find best comparison strategy
-    plot_n_k_fold_cv_eval(X, y, 5, OneVsRestClassifier(svm.SVC(kernel='rbf', C=1)), k=3)
-    plot_n_k_fold_cv_eval(X, y, 5, OneVsOneClassifier(svm.SVC(kernel='rbf', C=1)), k=3)    
+    # plot_n_k_fold_cv_eval(X, y, 5, OneVsRestClassifier(svm.SVC(kernel='rbf', C=1)), k=3)
+    # plot_n_k_fold_cv_eval(X, y, 5, OneVsOneClassifier(svm.SVC(kernel='rbf', C=1)), k=3)    
 
     # Separate data into training and test data
-    # X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=random_state)
+    # X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.33, random_state=random_state)
 
     # --- EXERCISES ---
 
@@ -136,3 +153,7 @@ if __name__ == "__main__":
 
     # Predict image pixels classes
     # svm_image_classification(X_train, y_train, images_directory + "image3.jpg")
+
+    # --- DATA PLOT ---
+    X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.05, random_state=random_state)
+    plot_3d_data(X_test, y_test)
