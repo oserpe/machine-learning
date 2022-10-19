@@ -28,7 +28,7 @@ class SimplePerceptron(BaseEstimator):
         # By iteration
         self.w_list = np.array([self.w_])
         self.b_list = np.array(self.b_)
-        
+
         # By epoch
         self.w_epoch_list = np.array([self.w_])
         self.b_epoch_list = np.array(self.b_)
@@ -48,9 +48,13 @@ class SimplePerceptron(BaseEstimator):
 
             iter += 1
             if iter % X.shape[0] == 0:
-                self.w_epoch_list = np.append(self.w_epoch_list, [self.w_], axis=0)
-                self.b_epoch_list = np.append(self.b_epoch_list, self.b_, axis=0)
-                self.error_epoch_list = np.append(self.error_epoch_list, self.compute_error(X, y))
+                self.w_epoch_list = np.append(
+                    self.w_epoch_list, [self.w_], axis=0)
+                self.b_epoch_list = np.append(
+                    self.b_epoch_list, self.b_, axis=0)
+                self.error_epoch_list = np.append(
+                    self.error_epoch_list, self.compute_error(X, y))
+
                 epoch += 1
 
             error = self.compute_error(X, y)
@@ -80,9 +84,9 @@ class SimplePerceptron(BaseEstimator):
 
         h = X @ w + b
         y_hat = [1 if x >= 0 else -1 for x in h]
-        
+
         return y_hat
-    
+
     def predict_by_epoch(self, X):
         # For every epoch, calculate all the predictions for each sample in X
         y_hat_by_epoch = []
@@ -91,11 +95,11 @@ class SimplePerceptron(BaseEstimator):
             y_hat_by_epoch.append(y_hat)
 
         return np.array(y_hat_by_epoch)
-    
+
     def compute_error_by_epoch(self, X, y):
         y_hat = self.predict_by_epoch(X)
         err = 0.5 * np.sum(np.square(y_hat - y), axis=1)
-        
+
         return err
 
     def compute_error(self, X, y):
