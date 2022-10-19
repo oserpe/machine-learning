@@ -55,18 +55,18 @@ def plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=False):
     # plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)
 
     # PLOT: error by epoch
-    y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
-    plot_error_by_epoch(perceptron.epochs,
-                        perceptron.error_epoch_list, y_test_error)
+    # y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
+    # plot_error_by_epoch(perceptron.epochs,
+    #                     perceptron.error_epoch_list, y_test_error)
 
     # PLOT: confusion matrix
-    y_pred = perceptron.predict(X_test)
-    cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
-    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    # y_pred = perceptron.predict(X_test)
+    # cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
+    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # PLOT: metrics
-    metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
-    Metrics.plot_metrics_heatmap(metrics_per_class)
+    # metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
+    # Metrics.plot_metrics_heatmap(metrics_per_class)
 
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
@@ -134,12 +134,12 @@ def plot_ej_c(X_train, y_train, X_test, y_test, interval, seed, animate = False)
                   title="Perceptron classification with not linearly separable dataset", colors=['green'], labels=['Predicted'])
 
     # PLOT: n k fold cross validation
-    # plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)
+    plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)
 
     # PLOT: error by epoch
-    y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
-    plot_error_by_epoch(perceptron.epochs,
-                        perceptron.error_epoch_list, y_test_error)
+    # y_test_error = perceptron.compute_error_by_epoch(X_test, y_test)
+    # plot_error_by_epoch(perceptron.epochs,
+    #                     perceptron.error_epoch_list, y_test_error)
 
     # PLOT: confusion matrix
     # y_pred = perceptron.predict(X_test)
@@ -274,18 +274,20 @@ def plot_ej_d_non_sep(X_train, X_test, y_train, y_test, interval, seed, animate=
     # plot_n_k_fold_cv_eval(X, y, 5, svm, k=5)
 
     # PLOT: error by epoch
-    # y_test_error = svm.compute_error_by_epoch(X_test, y_test)
-    # plot_error_by_epoch(svm.epochs,
-    #                     svm.error_epoch_list, y_test_error)
+    y_test_error = svm.compute_error_by_epoch(X_test, y_test)
+    print(svm.error_epoch_list)
+    print(y_test_error)
+    plot_error_by_epoch(svm.epochs,
+                        svm.error_epoch_list, y_test_error)
 
     # PLOT: confusion matrix
-    # y_pred = svm.predict(X_test)
-    # cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
-    # Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    y_pred = svm.predict(X_test)
+    cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, [-1, 1])
+    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # PLOT: metrics
-    # metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
-    # Metrics.plot_metrics_heatmap(metrics_per_class)
+    metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
+    Metrics.plot_metrics_heatmap(metrics_per_class)
 
 
 def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] = None, title: str = None,
@@ -337,7 +339,7 @@ if __name__ == "__main__":
     #                        y, y_test, perceptron_grid_search_params)
 
     # plot_ej_a(X_train, y_train, X_test, y_test, interval, seed)
-    # plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
+    plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=True)
     # plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_b(X_train, y_train, X_test, y_test, interval, seed)
@@ -366,7 +368,7 @@ if __name__ == "__main__":
 
     # plot_ej_d_sep(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, seed)
-    plot_ej_d_non_sep(non_sep_X_train, non_sep_X_test, non_sep_y_train, non_sep_y_test, interval, seed)
+    # plot_ej_d_non_sep(non_sep_X_train, non_sep_X_test, non_sep_y_train, non_sep_y_test, interval, seed)
     # ej_d_non_sep_gridsearch(non_sep_X_train, non_sep_y_train)
 
 # seed 1, prox 0.1, prob 0.5 - parece no linealmente separable

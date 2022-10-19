@@ -98,8 +98,18 @@ class SVM(BaseEstimator):
 
     def compute_error(self, X, y):
         # Compute hinge loss
-        t = y * (X @ self.w_ + self.b_)
-        return self.c * np.sum(np.maximum(0, 1 - t)) + 0.5 * np.sum(self.w_ ** 2)
+        err = 0
+
+        for i in range(X.shape[0]):
+            x_i = X[i]
+            y_i = y[i]
+
+            t = y_i * (np.dot(self.w_, x_i) + self.b_)
+
+            if t < 1:
+                err += 1 - t
+
+        return self.c * err + 0.5 * np.sum(self.w_ ** 2)
 
     def compute_learning_rate(self, t, eta):
         # TODO: Check for underflow?
