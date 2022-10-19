@@ -63,8 +63,8 @@ def plot_ej_a(X_train, y_train, X_test, y_test, m, b, interval, seed, animate=Fa
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
     # PLOT: metrics
-    metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
-    Metrics.plot_metrics_heatmap(metrics_per_class)
+    # metrics_per_class = Metrics.get_metrics_per_class(cf_matrix)[0]
+    # Metrics.plot_metrics_heatmap(metrics_per_class)
 
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):

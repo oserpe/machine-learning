@@ -294,7 +294,18 @@ class Metrics:
 
     @staticmethod
     def plot_confusion_matrix_heatmap(cf_matrix, predicted_title="Predicted label", actual_title="Truth label", plot_title=""):
-        ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='d')
+        # Create a new dataframe with the percentages of each cell
+        cf_matrix_perc = cf_matrix.div(cf_matrix.sum(axis=1), axis=0) * 100
+
+        # Build the heatmap annotation with the number and percentage of each cell
+        labels = []
+        for i in range(len(cf_matrix.index)):
+            labels.append([f"{cf_matrix.iloc[i, j]}\n({cf_matrix_perc.iloc[i, j]:.2f}%)" for j in range(len(cf_matrix.columns))])
+
+        # Plot the heatmap
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax = sns.heatmap(cf_matrix, annot=labels, fmt = '', cmap='Blues')
+        # ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='d')
         ax.set_xlabel(predicted_title, fontsize=12)
         ax.set_ylabel(actual_title, fontsize=12)
         plt.yticks(rotation=0)
