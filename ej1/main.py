@@ -172,11 +172,29 @@ def plot_ej_d_sep(X, y, m, b, interval, seed):
     plot_data(X, y, interval, [[*svm.w_, svm.b_], [m, -1, b]],
               title="SVM classification with linearly separable dataset", colors=['green', 'red'], labels=['Predicted', 'Real'])
 
+def ej_d_non_sep_gridsearch(X, y, interval):
+
+    # defining parameter range
+    param_grid = {'c': [0.01, 0.1, 1, 5, 10],
+                  'max_iter': [1000, 10000],
+                  'eta_w': [0.005, 0.01, 0.1, 1],
+                  'eta_b': [0.005, 0.01, 0.1, 1],
+                  'eta_decay_rate': [0.005, 0.01, 0.1, 1]}
+    grid = GridSearchCV(SVM(c=1, max_iter=10000, random_state=seed, tol=0.01,
+                            eta_w=0.01, eta_b=0.005, eta_decay_rate=0.005, verbose=False),
+                        param_grid, refit=True, verbose=3, n_jobs=-1, cv=5)
+
+    # fitting the model for grid search
+    grid.fit(X, y)
+
+    # print best parameter after tuning
+    print(grid.best_params_)
+
 
 def plot_ej_d_non_sep(X, y, interval, seed):
     # Classify the points using the hinge loss SVM
-    svm = SVM(c=1, max_iter=10000, random_state=seed, tol=0.01,
-              eta_w=0.01, eta_b=0.01, eta_decay_rate=0.1, verbose=True)
+    svm = SVM(c=10, max_iter=10000, random_state=seed, tol=0.01,
+                            eta_w=0.01, eta_b=1, eta_decay_rate=0.01, verbose=False)
 
     svm.fit(X, y)
 
@@ -222,7 +240,7 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 
 
 if __name__ == "__main__":
-    seed = 49
+    seed = 2
     interval = [0, 5]
     n = 200
 
@@ -241,20 +259,23 @@ if __name__ == "__main__":
     #                        y, y_test, perceptron_grid_search_params)
 
     # plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=True)
-    plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
+    # plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
     # plot_ej_b(X_train, y_train, X_test, y_test, interval, seed)
     # plot_ej_b(X, X_test, y, y_test, interval, seed)
 
-    # noise_prox = 0.2
-    # noise_prob = 0.5
-    # non_sep_X, non_sep_y = generate_not_linearly_separable(
-    #     n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
 
+    noise_prox = 0.3
+    noise_prob = 0.5
+    non_sep_X, non_sep_y = generate_not_linearly_separable(
+        n, interval, noise_proximity=noise_prox, noise_probability=noise_prob, seed=seed)
+
+    print(len(X),len(non_sep_X))
     # plot_ej_c(non_sep_X, non_sep_y, interval, seed)
 
     # plot_ej_d_sep(X, y, m, b, interval, seed)
     # plot_ej_d_sep_grid_search(X_train, X_test, y_train, y_test, m, b, interval, seed)
-    # plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
+    plot_ej_d_non_sep(non_sep_X, non_sep_y, interval, seed)
+    # ej_d_non_sep_gridsearch(non_sep_X, non_sep_y, interval)
 
 # seed 1, prox 0.1, prob 0.5 - parece no linealmente separable
 # seed 2, prox 0.1, prob 0.5 idem, mejor que 1
