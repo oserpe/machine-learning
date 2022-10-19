@@ -1,5 +1,4 @@
 import math
-from turtle import left
 import numpy as np
 from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 import itertools
@@ -19,13 +18,15 @@ from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 
 # TODO: move to utils.py
+
+
 def generate_line_interval(m, b, interval):
     return [m * interval[0] + b, m * interval[1] + b]
 
 
-def plot_ej_a(X_train, y_train, X_test, y_test, m, b, interval, seed, animate=False):
+def plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=False):
     # Classify the points using the perceptron
-    perceptron = SimplePerceptron(eta=0.01, max_iter=1000, max_epochs=1000,
+    perceptron = SimplePerceptron(eta=0.01, max_iter=1200, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X_train, y_train)
@@ -38,15 +39,17 @@ def plot_ej_a(X_train, y_train, X_test, y_test, m, b, interval, seed, animate=Fa
         fig, ax = plt.subplots(1, 1)
 
         # Plot the hyperplane animation
-        animate_func = get_animation_function(perceptron, X_train, y_train, interval, ax, "Perceptron classification with linearly separable dataset")
+        animate_func = get_animation_function(
+            perceptron, X_train, y_train, interval, ax, "Perceptron classification with linearly separable dataset")
         anim = animation.FuncAnimation(fig, animate_func, frames=len(
             perceptron.w_list), repeat=False, interval=25)
-        
-        anim.save('./machine-learning/ej1/dump/linearly_dataset_perceptron_animation.gif', fps=2)
-        plt.show()   
+
+        anim.save(
+            './machine-learning/ej1/dump/linearly_dataset_perceptron_animation.mp4', fps=20)
+        plt.show()
     else:
         plot_data(X_train, y_train, interval, [[*perceptron.w_, perceptron.b_]],
-              title="Perceptron classification with linearly separable dataset", colors=['green'], labels=['Predicted']) 
+                  title="Perceptron classification with linearly separable dataset", colors=['green'], labels=['Predicted'])
 
     # PLOT: n k fold cross validation
     # plot_n_k_fold_cv_eval(X, y, 5, perceptron, k=5)
@@ -69,7 +72,7 @@ def plot_ej_a(X_train, y_train, X_test, y_test, m, b, interval, seed, animate=Fa
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     # Classify the points using the perceptron
-    perceptron = SimplePerceptron(eta=0.01, max_iter=10000, max_epochs=1000,
+    perceptron = SimplePerceptron(eta=0.01, max_iter=1200, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X_train, y_train)
@@ -79,24 +82,27 @@ def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     three_points_svm = ThreePointsSVM()
     three_points_svm.fit(X_train, y_train, [m, b])
 
-    plt.scatter(three_points_svm.support_points_x, three_points_svm.support_points_y, c="violet", s=170)
+    plt.scatter(three_points_svm.support_points_x,
+                three_points_svm.support_points_y, c="violet", s=170)
 
     # find accuracy
     y_pred = three_points_svm.predict(X_test)
     accuracy = np.sum(y_pred == y_test) / len(y_test)
     print("test accuracy: ", accuracy)
 
+    print("Optimal hyperplane confidence: ",
+          three_points_svm.confidence_margin)
+    print("Perceptron confidence: ", three_points_svm.perceptron_confidence)
+
     # TRAIN HYPERPLANE
     plot_data(X_train, y_train, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-              title="Optimal hyperplane", colors=['green', 'blue', 'blue', 'red'], 
+              title="Optimal hyperplane", colors=['green', 'blue', 'blue', 'red'],
               styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
               labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
-    print("Optimal hyperplane confidence: ", three_points_svm.confidence_margin)
-    print("Perceptron confidence: ", three_points_svm.perceptron_confidence)
     # TEST
     # plot_data(X_test, y_test, interval, [three_points_svm.optimum_hyperplane_data, *three_points_svm.support_hyperplanes_data, [m, -1, b]],
-    #           title="Optimal hyperplane with test dataset", colors=['green', 'blue', 'blue', 'red'], 
+    #           title="Optimal hyperplane with test dataset", colors=['green', 'blue', 'blue', 'red'],
     #           styles=['-', '--', '--', '-'], with_support_hyperplanes=True,
     #           labels=['Optimal hyperplane', 'Support hyperplane', 'Support hyperplane', 'Perceptron'])
 
@@ -115,11 +121,13 @@ def plot_ej_c(X, y, interval, seed):
     fig, ax = plt.subplots(1, 1)
 
     # Plot the hyperplane animation
-    animate = get_animation_function(perceptron, X, y, interval, ax, "Perceptron classification with not linearly separable dataset")
+    animate = get_animation_function(
+        perceptron, X, y, interval, ax, "Perceptron classification with not linearly separable dataset")
     anim = animation.FuncAnimation(fig, animate, frames=len(
         perceptron.w_list), repeat=False, interval=0)
-    
-    anim.save('./machine-learning/ej1/dump/not_linearly_dataset_perceptron_animation.mp4', fps=5)
+
+    anim.save(
+        './machine-learning/ej1/dump/not_linearly_dataset_perceptron_animation.mp4', fps=20)
     plt.show()
 
 
@@ -220,18 +228,22 @@ if __name__ == "__main__":
 
     X, y, m, b = generate_linearly_separable(
         n, interval, seed, clustering=True, hyperplane_margin=0.5)
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=seed)
 
     # perceptron_grid_search_params = {
-    #     "eta": [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]}
-    # execute_grid_search_cv(SimplePerceptron(eta=0.001, max_iter=1000, max_epochs=1000,
-    #                                         tol=0.01, random_state=seed, verbose=False), X_train, X_test,
-    #                        y_train, y_test, perceptron_grid_search_params)
+    #     "eta": [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1],
+    #     "max_iter": [300, 500, 700, 1000, 1200]}
 
-    plot_ej_a(X_train, y_train, X_test, y_test, m, b, interval, seed)
+    # execute_grid_search_cv(SimplePerceptron(eta=0.001, max_iter=1000, max_epochs=1000,
+    #                                         tol=0.01, random_state=seed, verbose=False), X, X_test,
+    #                        y, y_test, perceptron_grid_search_params)
+
+    # plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=True)
+    plot_ej_b(X_train, X_test, y_train, y_test, interval, seed)
+    # plot_ej_b(X_train, y_train, X_test, y_test, interval, seed)
     # plot_ej_b(X, X_test, y, y_test, interval, seed)
-    
 
     # noise_prox = 0.2
     # noise_prob = 0.5
