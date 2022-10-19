@@ -25,6 +25,9 @@ class SimplePerceptron(BaseEstimator):
         best_b = self.b_
         best_error = math.inf
 
+        self.w_list = np.array([self.w_])
+        self.b_list = np.array(self.b_)
+
         while epoch < self.max_epochs and iter < self.max_iter and error > self.tol:
             random_sample = self.random_state.randint(0, X.shape[0])
             x = X[random_sample]
@@ -34,6 +37,8 @@ class SimplePerceptron(BaseEstimator):
             update = self.eta * (y[random_sample] - y_hat)
             self.w_ += update * x
             self.b_ += update
+            self.w_list = np.append(self.w_list, [self.w_], axis=0)
+            self.b_list = np.append(self.b_list, self.b_, axis=0)
 
             iter += 1
             if iter % X.shape[0] == 0:
@@ -66,3 +71,6 @@ class SimplePerceptron(BaseEstimator):
         err = 0.5 * sum(np.square(y_hat - y))
 
         return err
+
+    def score(self, X, y):
+        return np.mean(self.predict(X) == y)
