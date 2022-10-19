@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 from ..models.Metrics import Metrics
 
 
@@ -33,3 +34,19 @@ def get_animation_function(model, X, y, interval, ax, title):
         ax.set_ylim(interval)
     
     return animate
+
+def plot_lines(X=[], y=[], colors=[], labels=[], title=""):
+    if len(X) != len(y) or len(X) != len(colors) or len(X) != len(labels):
+        raise ValueError('X, y, colors and labels must have the same length')
+    
+    for x_value, y_value, color, label in zip(X, y, colors, labels):
+        plt.plot(x_value, y_value, color=color, label=label)
+    
+    plt.legend()
+    plt.title(title)
+    plt.show()
+
+def plot_error_by_epoch(epochs=[], y_train_error=[], y_test_error=[]):
+    colors=["green", "red"]
+    labels=["Train", "Test"]
+    plot_lines([epochs, epochs], [y_train_error, y_test_error], colors, labels, title="Error by Epoch")

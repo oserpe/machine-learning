@@ -424,7 +424,6 @@ class Metrics:
 
         # Build a dataframe from the metrics dictionary
         df = pd.DataFrame.from_dict(k_metrics_per_class, orient='index')
-        print(k_metrics_per_class)
         return k_metrics_per_class, df
         
     @staticmethod
