@@ -72,7 +72,7 @@ def plot_ej_a(X_train, y_train, X_test, y_test, interval, seed, animate=False):
 
 def plot_ej_b(X_train, X_test, y_train, y_test, interval, seed):
     # Classify the points using the perceptron
-    perceptron = SimplePerceptron(eta=0.01, max_iter=1200, max_epochs=1000,
+    perceptron = SimplePerceptron(eta=0.01, max_iter=5000, max_epochs=1000,
                                   tol=0.01, random_state=seed, verbose=False)
 
     perceptron.fit(X_train, y_train)
@@ -222,7 +222,7 @@ def plot_data(X, y, interval, hyperplanes: list[list[float]], labels: list[str] 
 
 
 if __name__ == "__main__":
-    seed = 4
+    seed = 49
     interval = [0, 5]
     n = 200
 

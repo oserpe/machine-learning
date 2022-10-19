@@ -38,7 +38,8 @@ def test_svm(X_train, X_test, y_train, y_test, kernel, C=1, gamma='scale'):
 
 
 def test_different_svm_kernels(X_train, X_test, y_train, y_test):
-    
+    kernels = ['linear', 'poly', 'rbf']
+
     scores = []
     for kernel in kernels:
         print(f"Testing kernel={kernel}")
