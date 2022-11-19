@@ -25,7 +25,7 @@ if __name__ == "__main__":
     movies_df.dropna(inplace=True)
 
     # TODO: SACAR ESTO, ES PARA TESTING
-    movies_df = movies_df.sample(frac=0.1, random_state=random_state)
+    movies_df = movies_df.sample(frac=0.01, random_state=random_state)
 
     # standarize data
     movies_df = pd.DataFrame(StandardScaler().fit_transform(movies_df), columns=movies_df.columns)
@@ -36,4 +36,7 @@ if __name__ == "__main__":
 
     # ------- K-Means -------
     k_means = KMeans(K=3, max_iter=10, random_state=random_state)
-    k_means.fit(movies_df.values)
+    print("kmeans variation: ", k_means.fit(movies_df.values))
+
+
+    
