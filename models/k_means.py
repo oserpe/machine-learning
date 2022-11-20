@@ -2,78 +2,94 @@ import math
 import numpy as np
 from sklearn.base import BaseEstimator
 
-class DotWithID:
-    # Class to store a dot with its id, so we know which row of the distances matrix corresponds to this dot
-    def __init__(self, id, dot):
+
+class Point:
+    def __init__(self, point, id):
         self.id = id
-        self.dot = dot
+        self.point = point
+
 
 class KMeans(BaseEstimator):
-    def __init__(self, K, max_iter, random_state, tol = 0.0001, verbose=True):
+    def __init__(self, K, max_iter, random_state, tol=0.0001, verbose=True):
         self.K = K
         self.max_iter = max_iter
         self.random_state = random_state
         self.tol = tol
         self.verbose = verbose
         self.centroids = []
-        self.groups = [[] for _ in range(self.K)]
+        self.clusters = [[] for _ in range(self.K)]
+        self.variations = []
 
-    def fit(self, X):
+    def compute_X_distances(self, X):
+        X_distances_matrix = np.zeros((len(X), len(X)))
 
-        # Precompute points distances for W variation calculation
-        points_distances = np.zeros((len(X), len(X)))
-        dots_with_id = []
         for i in range(len(X)):
             for j in range(i+1, len(X)):
-                    # FIXME: esto es euclidean distance pero en el ppt pareceria ser que es euclidean distance al cuadrado
-                points_distances[i][j] = np.linalg.norm(X[i] - X[j], axis=0)
-                points_distances[j][i] = points_distances[i][j] # symmetric matrix
-            
-            # create a DotWithID object for each dot, to remeber which row of the distances matrix corresponds to this dot
-            dots_with_id.append( DotWithID(i, X[i]) ) 
+                X_distances_matrix[i][j] = np.linalg.norm(X[i] - X[j], axis=0)
+                # symmetric matrix
+                X_distances_matrix[j][i] = X_distances_matrix[i][j]
 
+        return X_distances_matrix
+
+    def choose_initial_clusters(self, X):
+        random_state = np.random.RandomState(self.random_state)
+        clusters = [[] for _ in range(self.K)]
+        for x in X:
+            clusters[random_state.randint(0, self.K)].append(x)
+
+        return clusters
+
+    def compute_centroids(self, clusters):
+        return [np.mean(cluster, axis=0) for cluster in self.map_clusters_to_numpy(clusters)]
+
+    def find_closest_centroid(self, x, centroids):
+        # returns the index of the closest centroid to x
+        return np.argmin([np.linalg.norm(x.point - centroid) for centroid in centroids])
+
+    def map_clusters_to_numpy(self, clusters):
+        return [[x.point for x in cluster] for cluster in clusters]
+
+    def fit(self, X):
+        # Precompute points distances for computing variation within clusters
+        X_distances_matrix = self.compute_X_distances(X)
+        points = [Point(x, i) for i, x in enumerate(X)]
 
         # Initialize kmeans by assigning samples to random groups
-        random_state = np.random.RandomState(self.random_state)
-        for dot_with_id in dots_with_id:
-            self.groups[random_state.randint(0, self.K)].append(dot_with_id) 
+        self.clusters = self.choose_initial_clusters(points)
+        self.centroids = self.compute_centroids(self.clusters)
 
         iter = 0
-        self.variation = math.inf
-        last_variation = 0
-        while iter < self.max_iter and self.variation != last_variation:
-            iter +=1
-            self.variation = last_variation
+        prev_centroids = None
 
-            # Find centroids
-            self.centroids = [0 for _ in range(self.K)]
-            for i in range(self.K):
-                self.centroids[i] = np.mean(
-                    list(map(lambda dot_data: dot_data.dot , self.groups[i]))
-                    , axis=0)
+        while iter < self.max_iter and np.not_equal(self.centroids, prev_centroids).any():
+            iter += 1
 
-            # Assign samples to their closest prototype's group
-            self.groups = [[] for _ in range(self.K)]
-            for dot_with_id in dots_with_id:
+            # Assign samples to their closest centroid
+            self.clusters = [[] for _ in range(self.K)]
+            for x in points:
                 # find index of closest prototype
-                closest_prototype_index = np.argmin([np.linalg.norm(dot_with_id.dot - prototype) for prototype in self.centroids])
-                self.groups[closest_prototype_index].append(dot_with_id)
+                closest_centroid_index = self.find_closest_centroid(
+                    x, self.centroids)
+                self.clusters[closest_centroid_index].append(x)
+
+            # Find new centroids
+            self.centroids = self.compute_centroids(self.clusters)
 
             # Calculate sum of groups variation of W
-            last_variation = 0 
-            for group in self.groups:
-                if len(group) > 0:
-                    last_variation += self.calculate_W_variation(points_distances, group)
-                else: print("WARNING: empty group")
-            
+            self.variations.append(self.compute_average_variation(
+                X_distances_matrix, self.clusters)
+            )
 
-        # FIXME: should we return the best variation or the last variation?            
-        return self.variation
+        return self.map_clusters_to_numpy(self.clusters)
 
-    def calculate_W_variation(self, points_distances, dots_with_id):
-        W = 0
-        for i in range(len(dots_with_id)):
-            for j in range(i+1, len(dots_with_id)):
-                W += points_distances[dots_with_id[i].id][dots_with_id[j].id]
-        
-        return W/len(dots_with_id)
+    def compute_average_variation(self, X_distances_matrix, clusters):
+        total_variation = 0
+        for cluster in clusters:
+            for i in range(len(cluster)):
+                for j in range(i+1, len(cluster)):
+                    total_variation += X_distances_matrix[cluster[i].id][cluster[j].id]
+
+            if len(cluster) == 0:
+                print("WARNING: empty cluster")
+
+        return total_variation/len(clusters)
