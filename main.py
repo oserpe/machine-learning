@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from .models.k_means import KMeans
 from .models.hierarchical_clustering import HierarchichalClustering
+from .models.kohonen import Kohonen
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,5 +63,11 @@ if __name__ == "__main__":
             
     # print("hierarchichal distance evolution: ", hierarchichal_clustering.distance_evolution)
 
+    # ------- Kohonen clustering -------
+    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=5, initial_lr=0.1, K=10)
+    kohonen.fit(movies_df.values)
+    
+    # Plot U-Matrix
+    plt.imshow(kohonen.get_u_matrix(), cmap='gray')
 
     

@@ -105,3 +105,6 @@ class HierarchichalClustering(BaseEstimator):
 
             self.clusters_evolution.append(copy.copy(current_clusters))
             self.distance_evolution.append(min_cluster_distance)
+
+        return
+
