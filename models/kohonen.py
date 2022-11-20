@@ -41,6 +41,8 @@ class Kohonen(BaseEstimator):
         return closest_neuron
 
     def fit(self, X):
+        self.X = X
+
         random_state = np.random.RandomState(self.random_state)
         self.w = np.zeros((self.K, self.K, X.shape[1]))
         
@@ -70,12 +72,12 @@ class Kohonen(BaseEstimator):
         return
 
     def predict(self, X):
-        # find the winning weights for each sample
+        # find the winning neuron for each sample
         y = []
-        
+
         for x in X:
             winner = self.find_closest_neuron(x)
-            y.append(self.w[winner[0]][winner[1]])
+            y.append(winner)
 
         return y
 
