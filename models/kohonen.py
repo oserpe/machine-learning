@@ -69,11 +69,16 @@ class Kohonen(BaseEstimator):
             
         return
 
-    # def map_neighborhood(self, x, y, radius, f):
-    #     for i in range(x - radius, x + radius + 1):
-    #         for j in range(y - radius, y + radius + 1):
-    #             if i >= 0 and i < self.K and j >= 0 and j < self.K:
-    #                 f(i, j)
+    def predict(self, X):
+        # find the winning weights for each sample
+        y = []
+        
+        for x in X:
+            winner = self.find_closest_neuron(x)
+            y.append(self.w[winner[0]][winner[1]])
+
+        return y
+
 
     def get_mean_neighborhood_distance(self, x, y):
         radius = 1
