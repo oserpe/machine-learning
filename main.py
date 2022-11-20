@@ -46,21 +46,21 @@ if __name__ == "__main__":
     # variables_plot(movies_df)
 
     # ------- K-Means -------
-    k_means = KMeans(K=3, max_iter=10, random_state=random_state)
-    print("kmeans clusters: ", k_means.fit(movies_df.values))
+    # k_means = KMeans(K=3, max_iter=10, random_state=random_state)
+    # print("kmeans clusters: ", k_means.fit(movies_df.values))
 
 
     # ------- Hierarchichal clustering -------
-    hierarchichal_clustering = HierarchichalClustering()
-    hierarchichal_clustering.fit(movies_df.values)
+    # hierarchichal_clustering = HierarchichalClustering()
+    # hierarchichal_clustering.fit(movies_df.values)
 
-    print("hierarchichal clusters evolution: ")
-    for i, clusters in enumerate(hierarchichal_clustering.clusters_evolution):
-        print("Evolution : ", i)
-        for cluster in clusters:
-            print(cluster)
+    # print("hierarchichal clusters evolution: ")
+    # for i, clusters in enumerate(hierarchichal_clustering.clusters_evolution):
+    #     print("Evolution : ", i)
+    #     for cluster in clusters:
+    #         print(cluster)
             
-    print("hierarchichal distance evolution: ", hierarchichal_clustering.distance_evolution)
+    # print("hierarchichal distance evolution: ", hierarchichal_clustering.distance_evolution)
 
 
     
