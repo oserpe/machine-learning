@@ -68,11 +68,17 @@ if __name__ == "__main__":
     kohonen.fit(movies_df.values)
 
     # For every feature, plot the heatmap with its weights
+    # We have 9 features
+    rows = 3
+    cols = 3
+    fig, axes = plt.subplots(rows, cols) 
     for index, feature in enumerate(movies_df.columns):
+        row_index = index // cols
+        col_index = index % cols
         feature_weights = kohonen.get_feature_weights(index)
-        sns.heatmap(feature_weights, annot=True, fmt=".2f", cmap="YlGnBu", linewidths=0.5, xticklabels=False, yticklabels=False)
-        plt.title("Feature: " + feature)
-        plt.show()
+        sns.heatmap(feature_weights, cmap="YlGnBu", xticklabels=False, yticklabels=False, ax=axes[row_index, col_index])
+        axes[row_index, col_index].set_title(feature)
+    plt.show()
 
     # Plot the number of elements per cluster
     cluster_matrix = kohonen.clusters_to_matrix()
