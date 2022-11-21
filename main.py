@@ -66,16 +66,23 @@ if __name__ == "__main__":
     # ------- Kohonen clustering -------
     kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
     kohonen.fit(movies_df.values)
-    
+
+    # For every feature, plot the heatmap with its weights
+    for index, feature in enumerate(movies_df.columns):
+        feature_weights = kohonen.get_feature_weights(index)
+        sns.heatmap(feature_weights, annot=True, fmt=".2f", cmap="YlGnBu", linewidths=0.5, xticklabels=False, yticklabels=False)
+        plt.title("Feature: " + feature)
+        plt.show()
+
     # Plot the number of elements per cluster
     cluster_matrix = kohonen.clusters_to_matrix()
-    # Plot heatmap
-    sns.heatmap(cluster_matrix, annot=True, cmap="YlGnBu")
+    # Plot heatmap without x and y ticks
+    sns.heatmap(cluster_matrix, annot=True, cmap="YlGnBu", linewidths=0.5, xticklabels=False, yticklabels=False)
     plt.show()
 
     # Plot U-Matrix
     u_matrix = kohonen.get_u_matrix()
     # Plot heatmap
-    sns.heatmap(u_matrix, cmap="Greys_r", annot=True, fmt=".2f")
+    sns.heatmap(u_matrix, cmap="Greys_r", annot=True, fmt=".2f", linewidths=0.5, xticklabels=False, yticklabels=False)
     plt.show()
     
