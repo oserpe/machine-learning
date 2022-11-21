@@ -2,7 +2,7 @@ import math
 import numpy as np
 from sklearn.base import BaseEstimator
 
-from .hierarchical_clustering import Cluster
+from .cluster import Cluster
 
 def euclidean_distance(x, y):
     return np.linalg.norm(x - y)
@@ -126,6 +126,6 @@ class Kohonen(BaseEstimator):
         clusters_matrix = np.zeros((self.K, self.K))
         for i in range(self.K):
             for j in range(self.K):
-                clusters_matrix[i][j] = self.clusters[i * self.K + j].get_size()
+                clusters_matrix[i][j] = len(self.clusters[i * self.K + j])
         
         return clusters_matrix

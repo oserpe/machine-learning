@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from .models.k_means import KMeans
-from .models.hierarchical_clustering import HierarchichalClustering
+from .models.hierarchical_clustering import HierarchicalClustering
 from .models.kohonen import Kohonen
 from sklearn.preprocessing import StandardScaler
 import numpy as np
@@ -51,22 +51,28 @@ if __name__ == "__main__":
     # print("kmeans clusters: ", k_means.fit(movies_df.values))
 
 
-    # ------- Hierarchichal clustering -------
-    # hierarchichal_clustering = HierarchichalClustering()
-    # hierarchichal_clustering.fit(movies_df.values)
+    # ------- Hierarchical clustering -------
+    # hierarchical_clustering = HierarchicalClustering()
+    # hierarchical_clustering.fit(movies_df.values)
 
-    # print("hierarchichal clusters evolution: ")
-    # for i, clusters in enumerate(hierarchichal_clustering.clusters_evolution):
+    # print("hierarchical clusters evolution: ")
+    # for i, clusters in enumerate(hierarchical_clustering.clusters_evolution):
     #     print("Evolution : ", i)
     #     for cluster in clusters:
     #         print(cluster)
             
-    # print("hierarchichal distance evolution: ", hierarchichal_clustering.distance_evolution)
+    # print("hierarchical distance evolution: ", hierarchical_clustering.distance_evolution)
 
     # ------- Kohonen clustering -------
-    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=9, initial_lr=0.1, K=10)
+    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
     kohonen.fit(movies_df.values)
     
+    # Plot the number of elements per cluster
+    cluster_matrix = kohonen.clusters_to_matrix()
+    # Plot heatmap
+    sns.heatmap(cluster_matrix, annot=True, cmap="YlGnBu")
+    plt.show()
+
     # Plot U-Matrix
     u_matrix = kohonen.get_u_matrix()
     # Plot heatmap
