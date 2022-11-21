@@ -2,6 +2,8 @@ import math
 import numpy as np
 from sklearn.base import BaseEstimator
 
+from .hierarchical_clustering import Cluster
+
 def euclidean_distance(x, y):
     return np.linalg.norm(x - y)
 
@@ -46,6 +48,9 @@ class Kohonen(BaseEstimator):
         random_state = np.random.RandomState(self.random_state)
         self.w = np.zeros((self.K, self.K, X.shape[1]))
         
+        # create the empty clusters
+        self.clusters = [Cluster([]) for i in range(self.K * self.K)]
+        
         # initialize weights with random samples from X
         for i in range(self.K):
             for j in range(self.K):
@@ -66,20 +71,25 @@ class Kohonen(BaseEstimator):
                         if i >= 0 and i < self.K and j >= 0 and j < self.K:
                             self.w[i][j] += self.lr_fn(iter, self.max_iter, self.initial_lr) * (x_i - self.w[i][j])
 
-                
+                # add the sample into its corresponding cluster, only if it's the last iteration
+                if iter == self.max_iter - 1:
+                    pos = winner[0] * self.K + winner[1]
+                    self.clusters[pos].add_points([x_i])
+            
             iter += 1
             
         return
 
     def predict(self, X):
-        # find the winning neuron for each sample
-        y = []
+        # find the winning neuron for each sample and return its cluster index
+        clusters_index = []
 
         for x in X:
             winner = self.find_closest_neuron(x)
-            y.append(winner)
+            pos = winner[0] * self.K + winner[1]
+            clusters_index.append(pos)
 
-        return y
+        return clusters_index
 
 
     def get_mean_neighborhood_distance(self, x, y):
@@ -111,3 +121,11 @@ class Kohonen(BaseEstimator):
                 feature_weights[x][y] = self.w[x][y][feature_index]
         
         return feature_weights
+    
+    def clusters_to_matrix(self):
+        clusters_matrix = np.zeros((self.K, self.K))
+        for i in range(self.K):
+            for j in range(self.K):
+                clusters_matrix[i][j] = self.clusters[i * self.K + j].get_size()
+        
+        return clusters_matrix

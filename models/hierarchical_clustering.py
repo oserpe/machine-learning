@@ -19,6 +19,10 @@ class Cluster:
     def __str__(self) -> str:
         return f'Cluster with {len(self.points)} points and centroid {self.centroid}'
 
+    def add_points(self, points):
+        self.points.extend(points)
+        self.centroid = np.mean(self.points, axis=0)
+
     def distances_to_cluster_points(self, cluster):
         distances = []
         for point in self.points:
