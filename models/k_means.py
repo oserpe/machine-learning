@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from .cluster import Cluster
 from sklearn.base import BaseEstimator
 
 
@@ -10,13 +11,11 @@ class Point:
 
 
 class KMeans(BaseEstimator):
-    def __init__(self, K, max_iter, random_state, tol=0.0001, verbose=True):
+    def __init__(self, K, max_iter, random_state, verbose=True):
         self.K = K
         self.max_iter = max_iter
         self.random_state = random_state
-        self.tol = tol
         self.verbose = verbose
-        self.centroids = []
         self.clusters = [[] for _ in range(self.K)]
         self.variations = []
 
@@ -44,7 +43,7 @@ class KMeans(BaseEstimator):
 
     def find_closest_centroid(self, x, centroids):
         # returns the index of the closest centroid to x
-        return np.argmin([np.linalg.norm(x.point - centroid) for centroid in centroids])
+        return np.argmin([np.linalg.norm(x - centroid) for centroid in centroids])
 
     def map_clusters_to_numpy(self, clusters):
         return [[x.point for x in cluster] for cluster in clusters]
@@ -55,32 +54,34 @@ class KMeans(BaseEstimator):
         points = [Point(x, i) for i, x in enumerate(X)]
 
         # Initialize kmeans by assigning samples to random groups
-        self.clusters = self.choose_initial_clusters(points)
-        self.centroids = self.compute_centroids(self.clusters)
+        clusters = self.choose_initial_clusters(points)
+        centroids = self.compute_centroids(clusters)
 
         iter = 0
         prev_centroids = None
 
-        while iter < self.max_iter and np.not_equal(self.centroids, prev_centroids).any():
+        while iter < self.max_iter and np.not_equal(centroids, prev_centroids).any():
             iter += 1
 
             # Assign samples to their closest centroid
-            self.clusters = [[] for _ in range(self.K)]
+            clusters = [[] for _ in range(self.K)]
             for x in points:
                 # find index of closest prototype
                 closest_centroid_index = self.find_closest_centroid(
-                    x, self.centroids)
-                self.clusters[closest_centroid_index].append(x)
+                    x.point, centroids)
+                clusters[closest_centroid_index].append(x)
 
             # Find new centroids
-            self.centroids = self.compute_centroids(self.clusters)
+            centroids = self.compute_centroids(clusters)
 
             # Calculate sum of groups variation of W
             self.variations.append(self.compute_average_variation(
-                X_distances_matrix, self.clusters)
+                X_distances_matrix, clusters)
             )
 
-        return self.map_clusters_to_numpy(self.clusters)
+            
+        for i, cluster in enumerate(clusters):
+            self.clusters[i] = Cluster([x.point for x in cluster])
 
     def compute_average_variation(self, X_distances_matrix, clusters):
         total_variation = 0
@@ -93,3 +94,19 @@ class KMeans(BaseEstimator):
                 print("WARNING: empty cluster")
 
         return total_variation/len(clusters)
+
+    def predict(self, X):
+        # find the winning cluster for each sample and return its cluster index
+        clusters_index = []
+
+        for x in X:
+            closest_centroid_index = self.find_closest_centroid(
+                x, [cluster.centroid for cluster in self.clusters])
+            clusters_index.append(closest_centroid_index)
+
+        return clusters_index
+
+    def get_clusters(self, iteration):
+        return self.clusters
+    
+

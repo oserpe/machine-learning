@@ -24,6 +24,10 @@ if __name__ == "__main__":
         "machine-learning/data/movie_data.csv", header=0, sep=';')
     # TODO: release_date should be discretized instead of dropped?
 
+    # drop duplicates
+    movies_df.drop_duplicates(subset=["original_title"], keep="first", inplace=True)
+    movies_df.drop_duplicates(subset=["imdb_id"], keep="first", inplace=True)
+
     # remove non numerical columns
     movies_df = movies_df.drop(
         columns=["original_title", "imdb_id", "overview", "release_date"])
@@ -49,8 +53,11 @@ if __name__ == "__main__":
     # variables_plot(movies_df)
 
     # ------- K-Means -------
-    # k_means = KMeans(K=3, max_iter=10, random_state=random_state)
-    # print("kmeans clusters: ", k_means.fit(movies_df.values))
+    k_means = KMeans(K=3, max_iter=100, random_state=random_state)
+    k_means.fit(movies_df.values)
+    print("kmeans clusters: ")
+    for cluster in k_means.clusters:
+        print(cluster)
 
 
     # ------- Hierarchical clustering -------
@@ -66,7 +73,7 @@ if __name__ == "__main__":
     # print("hierarchical distance evolution: ", hierarchical_clustering.distance_evolution)
 
     # ------- Kohonen clustering -------
-    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
+    # kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
     # kohonen.fit(movies_df.values)
 
     # # For every feature, plot the heatmap with its weights
@@ -95,7 +102,8 @@ if __name__ == "__main__":
     # plt.show()
 
     # ------- Unsupervised classifier -------
-    unsupervised_classifier = UnsupervisedClassifier(kohonen)
+    unsupervised_classifier = UnsupervisedClassifier(k_means)
     unsupervised_classifier.fit(movies_df.values, only_genres_df.values, movies_df.columns, only_genres_df.name)
     predictions = unsupervised_classifier.predict(movies_df.values[:5])
     print("predictions: ", predictions)
+    print("real values: ", only_genres_df.values[:5])
