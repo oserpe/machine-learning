@@ -51,7 +51,7 @@ class Cluster:
         return np.linalg.norm(self.centroid - cluster.centroid)
 
 
-class HierarchichalClustering(BaseEstimator):
+class HierarchicalClustering(BaseEstimator):
     def __init__(self, distance_metric: ClusteringDistance = None, verbose=True):
         self.verbose = verbose
         self.distance_metric = distance_metric

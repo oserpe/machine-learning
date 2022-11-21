@@ -100,3 +100,14 @@ class Kohonen(BaseEstimator):
                 u_matrix[x][y] = self.get_mean_neighborhood_distance(x, y)
 
         return u_matrix
+    
+    def get_feature_weights(self, feature_index):
+        if feature_index >= self.w.shape[2]:
+            raise Exception("Feature index out of bounds")
+
+        feature_weights = np.zeros((self.K, self.K))
+        for x in range(self.K):
+            for y in range(self.K):
+                feature_weights[x][y] = self.w[x][y][feature_index]
+        
+        return feature_weights
