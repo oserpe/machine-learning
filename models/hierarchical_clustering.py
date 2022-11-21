@@ -62,5 +62,5 @@ class HierarchicalClustering(BaseEstimator):
 
         return
 
-    def get_clusters(self, iteration=-1):
+    def get_clusters(self, iteration=0):
         return self.clusters_evolution[iteration]
