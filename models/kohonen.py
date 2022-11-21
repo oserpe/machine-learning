@@ -43,8 +43,6 @@ class Kohonen(BaseEstimator):
         return closest_neuron
 
     def fit(self, X):
-        self.X = X
-
         random_state = np.random.RandomState(self.random_state)
         self.w = np.zeros((self.K, self.K, X.shape[1]))
         
@@ -59,9 +57,8 @@ class Kohonen(BaseEstimator):
         iter = 0
         while iter < self.max_iter:
             radius = math.floor(self.radius_fn(iter, self.max_iter, self.initial_radius))
-            for i in range(len(X)):
-                x_i = X[random_state.randint(0, len(X))]
-
+            X_shuffled = random_state.permutation(X)
+            for x_i in X_shuffled:
                 # find the winning neuron
                 winner = self.find_closest_neuron(x_i)
 
@@ -129,3 +126,6 @@ class Kohonen(BaseEstimator):
                 clusters_matrix[i][j] = len(self.clusters[i * self.K + j])
         
         return clusters_matrix
+
+    def get_clusters(self, iteration):
+        return self.clusters
