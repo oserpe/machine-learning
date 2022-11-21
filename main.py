@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # TODO: borrar o hacer otra cosa con los registros que tienen algun dato faltante?
     movies_df.dropna(inplace=True)
 
-    GENRES_TO_ANALYZE = ["Adventura", "Comedia", "Drama"]
+    GENRES_TO_ANALYZE = ["Adventure", "Comedy", "Drama"]
     movies_df = movies_df[movies_df["genres"].isin(GENRES_TO_ANALYZE)]
 
     # once removed not interesting genres, we remove the column for the grouping process over numerical variables
