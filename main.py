@@ -11,12 +11,6 @@ import seaborn as sns
 from .models.unsupervised_classifier import UnsupervisedClassifier
 from .utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions
 
-def variables_plot(data_df):
-    data_df.hist(edgecolor='black', linewidth=1.0,
-                 xlabelsize=10, ylabelsize=10, grid=False)
-    plt.tight_layout()
-    plt.show()
-
 
 if __name__ == "__main__":
     random_state = 1
@@ -131,4 +125,5 @@ if __name__ == "__main__":
     # Plot kohonen matrix with clusters
     kohonen_predictions = unsupervised_classifier.model.predict(
         movies_df.values)
-    plot_kohonen_matrix_predictions(kohonen, y_predictions, kohonen_predictions, classes)
+    plot_kohonen_matrix_predictions(
+        kohonen, y_predictions, kohonen_predictions, classes)
