@@ -17,6 +17,16 @@ def plot_cf_matrix(y, y_predicted, labels = None):
     cf_matrix = Metrics.get_confusion_matrix(y, y_predicted, labels)
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
+def plot_curves_with_legend(inputs, outputs, legends = None, X_label = "X", Y_label = "Y"):
+    colors = sns.color_palette("hls", len(outputs)) 
+    for i in range(len(outputs)):
+        plt.plot(inputs, outputs[i], label=legends[i], color=colors[i])
+
+    plt.legend()
+    plt.xlabel(X_label)
+    plt.ylabel(Y_label)
+    plt.show()
+
 def plot_kohonen_matrix_predictions(kohonen_model, y_predictions, kohonen_predictions, classes):
     K = kohonen_model.K
 
