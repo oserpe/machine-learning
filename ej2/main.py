@@ -3,13 +3,12 @@ import matplotlib.pyplot as plt
 from ..models.k_means import KMeans
 from ..models.hierarchical_clustering import HierarchicalClustering
 from ..models.kohonen import Kohonen
-import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 import seaborn as sns
 from ..models.unsupervised_classifier import UnsupervisedClassifier
 from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend
-from ..data.generate_dataset import generate_dataset, generate_dataset_all_genres_dataset
+from ..data.generate_dataset import generate_dataset
 
 
 def elbow_method(X, Ks, times, initial_random_state):
