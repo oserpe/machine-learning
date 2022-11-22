@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 import seaborn as sns
 from .models.unsupervised_classifier import UnsupervisedClassifier
+from .utils.plots import plot_n_k_fold_cv_eval
 
 def variables_plot(data_df):
     data_df.hist(edgecolor='black', linewidth=1.0,
@@ -54,10 +55,10 @@ if __name__ == "__main__":
 
     # ------- K-Means -------
     k_means = KMeans(K=3, max_iter=100, random_state=random_state)
-    k_means.fit(movies_df.values)
-    print("kmeans clusters: ")
-    for cluster in k_means.clusters:
-        print(cluster)
+    # k_means.fit(movies_df.values)
+    # print("kmeans clusters: ")
+    # for cluster in k_means.clusters:
+    #     print(cluster)
 
 
     # ------- Hierarchical clustering -------
@@ -102,8 +103,18 @@ if __name__ == "__main__":
     # plt.show()
 
     # ------- Unsupervised classifier -------
-    unsupervised_classifier = UnsupervisedClassifier(k_means)
-    unsupervised_classifier.fit(movies_df.values, only_genres_df.values, movies_df.columns, only_genres_df.name)
-    predictions = unsupervised_classifier.predict(movies_df.values[:5])
-    print("predictions: ", predictions)
-    print("real values: ", only_genres_df.values[:5])
+    model = k_means
+    classes = only_genres_df.unique().tolist()
+    X_features = movies_df.columns.tolist()
+    y_feature = only_genres_df.name
+    unsupervised_classifier = UnsupervisedClassifier(model)
+    # unsupervised_classifier.fit(movies_df.values, only_genres_df.values, X_features, y_feature)
+    # predictions = unsupervised_classifier.predict(movies_df.values[:5])
+    # print("predictions: ", predictions)
+    # print("real values: ", only_genres_df.values[:5])
+
+    # ------- PLOTS ------- #
+    # Plot N-K-Fold
+    n = 5
+    k = 5
+    plot_n_k_fold_cv_eval(movies_df.values, only_genres_df.values, n=n, model=unsupervised_classifier, k=k, X_features=X_features, y_feature=y_feature, classes=classes)
