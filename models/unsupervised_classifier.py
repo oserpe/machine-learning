@@ -18,6 +18,8 @@ class UnsupervisedClassifier():
         # Create dataframe from X and y
         full_data = np.concatenate((X, y.reshape(-1, 1)), axis=1)
         df = pd.DataFrame(full_data, columns = [*X_features, y_feature])
+        # Change from object to float64 the X_features columns
+        df = df.astype({feature: 'float64' for feature in X_features})
         self.clusters = []
 
         # For each cluster, get their points and add the remaining features (y's)
