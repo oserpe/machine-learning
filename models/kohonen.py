@@ -127,5 +127,5 @@ class Kohonen(BaseEstimator):
 
         return clusters_matrix
 
-    def get_clusters(self, iteration):
+    def get_clusters(self):
         return self.clusters

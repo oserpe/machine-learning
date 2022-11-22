@@ -6,8 +6,9 @@ from .cluster import ClusteringDistance, Cluster
 
 
 class HierarchicalClustering(BaseEstimator):
-    def __init__(self, distance_metric: ClusteringDistance = None, verbose=True):
+    def __init__(self, K, distance_metric: ClusteringDistance = None, verbose=True):
         self.verbose = verbose
+        self.K = K
         self.distance_metric = distance_metric
         self.clusters_evolution = []
         self.distance_evolution = []
@@ -23,7 +24,7 @@ class HierarchicalClustering(BaseEstimator):
                 cluster_distances[i][j] = current_clusters[i]\
                     .distance_to_cluster(current_clusters[j], self.distance_metric)
 
-        while len(current_clusters) > 1:
+        while len(current_clusters) > self.K:
             min_cluster_distance = math.inf
             cluster_point_1 = None
             cluster_point_2 = None
@@ -81,7 +82,5 @@ class HierarchicalClustering(BaseEstimator):
 
         return clusters_index
 
-    def get_clusters(self, iteration=-1):
-        self.clusters = self.clusters_evolution[iteration]
+    def get_clusters(self):
         return self.clusters
-         

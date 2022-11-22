@@ -17,7 +17,7 @@ class UnsupervisedClassifier():
         elif model == 'hierarchical':
             from .hierarchical_clustering import HierarchicalClustering
             self.model = HierarchicalClustering(
-                K=K, max_iter=max_iter, random_state=random_state, verbose=verbose, distance_metric=hierarchical_distance_metric)
+                K=K, verbose=verbose, distance_metric=hierarchical_distance_metric)
         elif model == 'kohonen':
             from .kohonen import Kohonen
             if kohonen_initial_radius is None:
@@ -43,8 +43,8 @@ class UnsupervisedClassifier():
         self.clusters = []
 
         # For each cluster, get their points and add the remaining features (y's)
-        iteration = -1
-        for cluster in self.model.get_clusters(iteration):
+        # iteration = -1
+        for cluster in self.model.get_clusters():
             df_points = pd.DataFrame(cluster.points, columns=X_features)
             df_merged = pd.merge(df, df_points)
             self.clusters.append(df_merged)

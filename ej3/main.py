@@ -38,7 +38,7 @@ if __name__ == "__main__":
     y_feature = only_genres_df.name
 
     unsupervised_classifier = UnsupervisedClassifier(
-        "kohonen", K=5, max_iter=100, random_state=random_state)
+        "hierarchical", K=10, max_iter=100, random_state=random_state)
     unsupervised_classifier.fit(
         movies_df.values, only_genres_df.values, X_features, y_feature)
     predictions = unsupervised_classifier.predict(movies_df.values[:5])

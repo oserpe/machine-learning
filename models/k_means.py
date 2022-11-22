@@ -79,7 +79,6 @@ class KMeans(BaseEstimator):
                 X_distances_matrix, clusters)
             )
 
-            
         for i, cluster in enumerate(clusters):
             self.clusters[i] = Cluster([x.point for x in cluster])
 
@@ -106,7 +105,5 @@ class KMeans(BaseEstimator):
 
         return clusters_index
 
-    def get_clusters(self, iteration):
+    def get_clusters(self):
         return self.clusters
-    
-
