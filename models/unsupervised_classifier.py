@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator
 
 
 class UnsupervisedClassifier(BaseEstimator):
-    def __init__(self, model, K, max_iter, random_state, kohonen_initial_lr=0.01,
+    def __init__(self, model, K, max_iter, random_state=0, kohonen_initial_lr=0.01,
                  kohonen_initial_radius=None, kohonen_lr_fn=exp_decay, kohonen_radius_fn=exp_decay,
                  hierarchical_distance_metric=ClusteringDistance.CENTROID, verbose=True):
         self.K = K
@@ -22,27 +22,27 @@ class UnsupervisedClassifier(BaseEstimator):
         self.verbose = verbose
         self.model = model
 
-        if model == 'kmeans':
-            from .k_means import KMeans
-            self._model = KMeans(K=K, max_iter=max_iter,
-                                 random_state=random_state, verbose=verbose)
-        elif model == 'hierarchical':
-            from .hierarchical_clustering import HierarchicalClustering
-            self._model = HierarchicalClustering(
-                K=K, verbose=verbose, distance_metric=hierarchical_distance_metric)
-        elif model == 'kohonen':
-            from .kohonen import Kohonen
-            if kohonen_initial_radius is None:
-                kohonen_initial_radius = K
-            self._model = Kohonen(K=K, max_iter=max_iter, random_state=random_state, verbose=verbose, initial_lr=kohonen_initial_lr,
-                                  initial_radius=kohonen_initial_radius, lr_fn=kohonen_lr_fn, radius_fn=kohonen_radius_fn)
-        else:
-            raise ValueError('Invalid model')
-
     def get_feature_index(self, feature):
         return self.features.index(feature)
 
     def fit(self, X, y):
+        if self.model == 'kmeans':
+            from .k_means import KMeans
+            self._model = KMeans(K=self.K, max_iter=self.max_iter,
+                                 random_state=self.random_state, verbose=self.verbose)
+        elif self.model == 'hierarchical':
+            from .hierarchical_clustering import HierarchicalClustering
+            self._model = HierarchicalClustering(
+                K=self.K, verbose=self.verbose, distance_metric=self.hierarchical_distance_metric)
+        elif self.model == 'kohonen':
+            from .kohonen import Kohonen
+            if self.kohonen_initial_radius is None:
+                self.kohonen_initial_radius = self.K
+            self._model = Kohonen(K=self.K, max_iter=self.max_iter, random_state=self.random_state, verbose=self.verbose,
+                                  initial_lr=self.kohonen_initial_lr, initial_radius=self.kohonen_initial_radius, lr_fn=self.kohonen_lr_fn, radius_fn=self.kohonen_radius_fn)
+        else:
+            raise ValueError('Invalid model')
+
         self.X_features = X.columns
         self.y_feature = y.columns[0]
 
@@ -64,25 +64,13 @@ class UnsupervisedClassifier(BaseEstimator):
             self.clusters.append(df_merged)
 
     def predict(self, X):
-        predictions = []
+
         X = X.to_numpy()
 
-        for x in X:
-            # Get the cluster that x belongs to
-            cluster_index = self._model.predict([x])[0]
+        # Get the cluster that x belongs to
+        cluster_indexes = self._model.predict(X)
 
-            # Get the points in that cluster
-            cluster_points = self.clusters[cluster_index]
-
-            if len(cluster_points) == 0:
-                predictions.append(None)
-            else:
-                # Get the y's from those points and get the first mode
-                mode = cluster_points[self.y_feature
-                                      ].mode()[0]
-                predictions.append(mode)
-
-        return predictions
+        return np.array([self.clusters[cluster_index][self.y_feature].mode()[0] for cluster_index in cluster_indexes])
 
     def score(self, X, y):
         predictions = self.predict(X)

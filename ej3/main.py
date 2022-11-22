@@ -80,7 +80,7 @@ if __name__ == "__main__":
     GENRES_TO_ANALYZE = ["Adventure", "Comedy", "Drama"]
     movies_df = movies_df[movies_df["genres"].isin(GENRES_TO_ANALYZE)]
 
-    movies_df = movies_df.sample(frac=0.5, random_state=random_state)
+    movies_df = movies_df.sample(frac=0.2, random_state=random_state)
 
     only_genres_df = movies_df[["genres"]]
     # once removed not interesting genres, we remove the column for the grouping process over numerical variables
@@ -95,8 +95,9 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(
         movies_df[X_features], only_genres_df, test_size=0.2, random_state=random_state)
 
-    # find_hyperparameters_kmeans(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-    # find_hyperparameters_kohonen(
+    # find_hyperparameters_kmeans(
     #     X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-    find_hyperparameters_hierarchical(
+    find_hyperparameters_kohonen(
         X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
+    # find_hyperparameters_hierarchical(
+    #     X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
