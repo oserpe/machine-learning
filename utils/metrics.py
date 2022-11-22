@@ -290,7 +290,7 @@ class Metrics:
     def plot_confusion_matrix_heatmap(cf_matrix, predicted_title="Predicted label", actual_title="Truth label", plot_title=""):
         # Create a new dataframe with the percentages of each cell
         cf_matrix_perc = cf_matrix.div(cf_matrix.sum(axis=1), axis=0) * 100
-
+    
         # Build the heatmap annotation with the number and percentage of each cell
         labels = []
         for i in range(len(cf_matrix.index)):
