@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+
 def generate_dataset():
     movies_df = pd.read_csv(
         "machine-learning/data/movie_data.csv", header=0, sep=';')
@@ -8,6 +9,12 @@ def generate_dataset():
 
     # drop duplicates by id
     movies_df.drop_duplicates(subset=["imdb_id"], keep="first", inplace=True)
+
+    movies_df['release_date'] = pd.to_datetime(
+        movies_df['release_date'], format='%Y-%m-%d')
+
+    # bin release_date by year in new column
+    movies_df['year'] = pd.DatetimeIndex(movies_df['release_date']).year
 
     # remove non numerical columns
     movies_df = movies_df.drop(
@@ -22,13 +29,12 @@ def generate_dataset():
     # TODO: SACAR ESTO, ES PARA TESTING
     # movies_df = movies_df.sample(frac=0.25, random_state=random_state)
 
-    only_genres_df = movies_df["genres"]
+    only_genres_df = movies_df[["genres"]]
     # once removed not interesting genres, we remove the column for the grouping process over numerical variables
     movies_df = movies_df.drop(columns=["genres"])
 
     # standarize data
     movies_df = pd.DataFrame(StandardScaler().fit_transform(
         movies_df), columns=movies_df.columns)
-    
-    return movies_df, only_genres_df
 
+    return movies_df, only_genres_df
