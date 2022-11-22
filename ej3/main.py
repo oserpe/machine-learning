@@ -23,6 +23,12 @@ def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
     grid_predictions = grid.predict(X_test)
     print(classification_report(y_test, grid_predictions))
 
+    # save params and classification report to file
+    with open("machine-learning/models/kmeans_params.txt", "w") as f:
+        f.write(str(grid.best_params_))
+        f.write("\n")
+        f.write(str(classification_report(y_test, grid_predictions)))
+
 
 def find_hyperparameters_kohonen(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="kohonen", K=1, max_iter=100, random_state=0, verbose=False), param_grid={
@@ -42,6 +48,12 @@ def find_hyperparameters_kohonen(X_train, y_train, X_test, y_test):
     grid_predictions = grid.predict(X_test)
     print(classification_report(y_test, grid_predictions))
 
+    # save params and classification report to file
+    with open("machine-learning/models/kohonen_params.txt", "w") as f:
+        f.write(str(grid.best_params_))
+        f.write("\n")
+        f.write(str(classification_report(y_test, grid_predictions)))
+
 
 def find_hyperparameters_hierarchical(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="hierarchical", K=1, max_iter=None, random_state=0, verbose=False), param_grid={
@@ -58,6 +70,12 @@ def find_hyperparameters_hierarchical(X_train, y_train, X_test, y_test):
     print(grid.best_params_)
     grid_predictions = grid.predict(X_test)
     print(classification_report(y_test, grid_predictions))
+
+    # save params and classification report to file
+    with open("machine-learning/models/hierarchical_params.txt", "w") as f:
+        f.write(str(grid.best_params_))
+        f.write("\n")
+        f.write(str(classification_report(y_test, grid_predictions)))
 
 
 if __name__ == "__main__":
