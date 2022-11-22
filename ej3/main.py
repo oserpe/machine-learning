@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from ..models.unsupervised_classifier import UnsupervisedClassifier
 from ..models.cluster import ClusteringDistance
 from ..data.generate_dataset import generate_dataset
+from matplotlib import pyplot as plt
 
 
 def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
@@ -78,7 +79,22 @@ def find_hyperparameters_hierarchical(X_train, y_train, X_test, y_test):
         f.write(str(classification_report(y_test, grid_predictions)))
 
 
+def plot_genres_impact():
+    # iterate over all columns
+    movies_df, only_genres_df = generate_dataset(standardize=False)
+    data_df = pd.concat([movies_df, only_genres_df], axis=1)
+    key_column = "genres"
+
+    for column in movies_df.columns:
+        display_data = data_df.groupby([column, key_column])[column].count().unstack(key_column)
+
+        display_data.plot(kind='bar', rot=0, stacked=True, ylabel="Cantidad de ejemplares")
+
+        plt.show(block=True)
+        
+
 if __name__ == "__main__":
+    plot_genres_impact()
     random_state = 1
     
     movies_df, only_genres_df = generate_dataset()

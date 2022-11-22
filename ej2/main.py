@@ -9,11 +9,12 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 import seaborn as sns
 from ..models.unsupervised_classifier import UnsupervisedClassifier
 from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend
-from ..data.generate_dataset import generate_dataset
+from ..data.generate_dataset import generate_dataset, generate_dataset_all_genres_dataset
 
 
 def elbow_method(X, Ks, times, initial_random_state):
     Ws = []
+    legends = []
 
     for i in range(times):
         random_state = initial_random_state + i
@@ -25,6 +26,7 @@ def elbow_method(X, Ks, times, initial_random_state):
             k_means.fit(X)
             Ws_k.append(k_means.variations[-1])
 
+        legends.append("Random state = " + str(random_state))
         Ws.append(Ws_k)
 
     plot_curves_with_legend(Ks, Ws, legends=list(
@@ -101,11 +103,12 @@ def n_k_fold(model, movies_df, only_genres_df):
 if __name__ == "__main__":
     random_state = 1
 
-    movies_df, only_genres_df = generate_dataset()
+    movies_df, only_genres_df = generate_dataset_all_genres_dataset()
+    # movies_df, only_genres_df = generate_dataset()
 
     # ------- PLOTS ------- #
     # Plot metodo del codo para elegir K en K_means
-    # elbow_method(movies_df.values, [1,2,3,4,6,10], 5, random_state)
+    elbow_method(movies_df.values, [1,2,3,4,6,8], 5, random_state)
 
     # Plot "model" n k fold
     # model = "kohonen"
@@ -113,4 +116,4 @@ if __name__ == "__main__":
 
     # kohonen_matrix_predictions(movies_df, only_genres_df)
 
-    plot_kohonen_clustering(movies_df)
+    # plot_kohonen_clustering(movies_df)

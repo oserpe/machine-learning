@@ -55,5 +55,5 @@ if __name__ == "__main__":
 
     movies_df, only_genres_df = generate_dataset(
         genres_to_analyze=None, standardize=False)
-    numeric_variables_histogram(movies_df)
-    genre_hbarplot(only_genres_df)
+    # numeric_variables_histogram(movies_df)
+    # genre_hbarplot(only_genres_df)
