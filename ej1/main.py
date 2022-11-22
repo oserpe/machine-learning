@@ -1,11 +1,17 @@
 from matplotlib import pyplot as plt
 import pandas as pd
 
+from ..data.generate_dataset import generate_dataset
+
 
 def numeric_variables_histogram(data_df):
     data_df.hist(edgecolor='black', linewidth=1,
                  xlabelsize=10, ylabelsize=10, grid=False)
     plt.tight_layout()
+
+    # reduce space between subplots
+    plt.subplots_adjust(wspace=0.2, hspace=0.5)
+
     plt.show()
 
 
@@ -47,6 +53,7 @@ if __name__ == "__main__":
     unique_df['release_date'] = pd.to_datetime(
         unique_df['release_date'], format='%Y-%m-%d')
 
-    numeric_variables_histogram(unique_df)
-    genre_hbarplot(unique_df)
-    # date_year_hbarplot(unique_df)
+    movies_df, only_genres_df = generate_dataset(
+        genres_to_analyze=None, standardize=False)
+    numeric_variables_histogram(movies_df)
+    genre_hbarplot(only_genres_df)

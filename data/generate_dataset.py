@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 
-def generate_dataset():
+def generate_dataset(genres_to_analyze=["Adventure", "Comedy", "Drama"], standardize=True):
     movies_df = pd.read_csv(
         "machine-learning/data/movie_data.csv", header=0, sep=';')
     # TODO: release_date should be discretized instead of dropped?
@@ -23,8 +23,9 @@ def generate_dataset():
     # TODO: borrar o hacer otra cosa con los registros que tienen algun dato faltante?
     movies_df.dropna(inplace=True)
 
-    GENRES_TO_ANALYZE = ["Adventure", "Comedy", "Drama"]
-    movies_df = movies_df[movies_df["genres"].isin(GENRES_TO_ANALYZE)]
+    if genres_to_analyze:
+        # get only genres to analyze
+        movies_df = movies_df[movies_df['genres'].isin(genres_to_analyze)]
 
     # TODO: SACAR ESTO, ES PARA TESTING
     # movies_df = movies_df.sample(frac=0.25, random_state=random_state)
@@ -34,7 +35,8 @@ def generate_dataset():
     movies_df = movies_df.drop(columns=["genres"])
 
     # standarize data
-    movies_df = pd.DataFrame(StandardScaler().fit_transform(
-        movies_df), columns=movies_df.columns)
+    if standardize:
+        movies_df = pd.DataFrame(StandardScaler().fit_transform(
+            movies_df), columns=movies_df.columns)
 
     return movies_df, only_genres_df
