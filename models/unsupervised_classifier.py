@@ -23,7 +23,7 @@ class UnsupervisedClassifier():
         self.clusters = []
 
         # For each cluster, get their points and add the remaining features (y's)
-        iteration = 0
+        iteration = -1
         for cluster in self.model.get_clusters(iteration):
             df_points = pd.DataFrame(cluster.points, columns=X_features)
             df_merged = pd.merge(df, df_points)

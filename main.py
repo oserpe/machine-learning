@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
 
     # ------- Hierarchical clustering -------
-    # hierarchical_clustering = HierarchicalClustering()
+    hierarchical_clustering = HierarchicalClustering()
     # hierarchical_clustering.fit(movies_df.values)
 
     # print("hierarchical clusters evolution: ")
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # print("hierarchical distance evolution: ", hierarchical_clustering.distance_evolution)
 
     # ------- Kohonen clustering -------
-    # kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
+    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
     # kohonen.fit(movies_df.values)
 
     # # For every feature, plot the heatmap with its weights
@@ -103,7 +103,9 @@ if __name__ == "__main__":
     # plt.show()
 
     # ------- Unsupervised classifier -------
-    model = k_means
+    # model = k_means
+    model = hierarchical_clustering
+    # model = kohonen
     classes = only_genres_df.unique().tolist()
     X_features = movies_df.columns.tolist()
     y_feature = only_genres_df.name

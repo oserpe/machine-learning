@@ -17,6 +17,7 @@ class HierarchicalClustering(BaseEstimator):
         current_clusters = [Cluster([point]) for point in X]
         cluster_distances = np.zeros(
             (len(current_clusters), len(current_clusters)))
+
         for i in range(len(current_clusters)):
             for j in range(i+1, len(current_clusters)):
                 cluster_distances[i][j] = current_clusters[i]\
@@ -60,7 +61,27 @@ class HierarchicalClustering(BaseEstimator):
             self.clusters_evolution.append(copy.copy(current_clusters))
             self.distance_evolution.append(min_cluster_distance)
 
-        return
+        self.clusters = copy.copy(current_clusters)
 
-    def get_clusters(self, iteration=0):
-        return self.clusters_evolution[iteration]
+    def find_closest_cluster_to_point(self, point):
+        point_cluster = Cluster([point])
+
+        closest_cluster_index = np.argmin(
+            [point_cluster.distance_to_cluster(cluster, self.distance_metric) for cluster in self.clusters])
+
+        return closest_cluster_index
+
+    def predict(self, X):
+        # find the winning cluster for each sample and return its cluster index
+        clusters_index = []
+
+        for x in X:
+            closest_centroid_index = self.find_closest_cluster_to_point(x)
+            clusters_index.append(closest_centroid_index)
+
+        return clusters_index
+
+    def get_clusters(self, iteration=-1):
+        self.clusters = self.clusters_evolution[iteration]
+        return self.clusters
+         
