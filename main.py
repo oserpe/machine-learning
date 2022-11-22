@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 import seaborn as sns
 from .models.unsupervised_classifier import UnsupervisedClassifier
-from .utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix
+from .utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions
 
 def variables_plot(data_df):
     data_df.hist(edgecolor='black', linewidth=1.0,
@@ -26,7 +26,8 @@ if __name__ == "__main__":
     # TODO: release_date should be discretized instead of dropped?
 
     # drop duplicates
-    movies_df.drop_duplicates(subset=["original_title"], keep="first", inplace=True)
+    movies_df.drop_duplicates(
+        subset=["original_title"], keep="first", inplace=True)
     movies_df.drop_duplicates(subset=["imdb_id"], keep="first", inplace=True)
 
     # remove non numerical columns
@@ -40,8 +41,8 @@ if __name__ == "__main__":
     movies_df = movies_df[movies_df["genres"].isin(GENRES_TO_ANALYZE)]
 
     # TODO: SACAR ESTO, ES PARA TESTING
-    movies_df = movies_df.sample(frac=0.05, random_state=random_state)
-    
+    movies_df = movies_df.sample(frac=0.25, random_state=random_state)
+
     only_genres_df = movies_df["genres"]
     # once removed not interesting genres, we remove the column for the grouping process over numerical variables
     movies_df = movies_df.drop(columns=["genres"])
@@ -60,7 +61,6 @@ if __name__ == "__main__":
     # for cluster in k_means.clusters:
     #     print(cluster)
 
-
     # ------- Hierarchical clustering -------
     hierarchical_clustering = HierarchicalClustering()
     # hierarchical_clustering.fit(movies_df.values)
@@ -70,18 +70,19 @@ if __name__ == "__main__":
     #     print("Evolution : ", i)
     #     for cluster in clusters:
     #         print(cluster)
-            
+
     # print("hierarchical distance evolution: ", hierarchical_clustering.distance_evolution)
 
     # ------- Kohonen clustering -------
-    kohonen = Kohonen(max_iter=100, random_state=random_state, initial_radius=4, initial_lr=0.1, K=10)
+    kohonen = Kohonen(max_iter=100, random_state=random_state,
+                      initial_radius=4, initial_lr=0.1, K=5)
     # kohonen.fit(movies_df.values)
 
     # # For every feature, plot the heatmap with its weights
     # # We have 9 features
     # rows = 3
     # cols = 3
-    # fig, axes = plt.subplots(rows, cols) 
+    # fig, axes = plt.subplots(rows, cols)
     # for index, feature in enumerate(movies_df.columns):
     #     row_index = index // cols
     #     col_index = index % cols
@@ -104,16 +105,18 @@ if __name__ == "__main__":
 
     # ------- Unsupervised classifier -------
     # model = k_means
-    model = hierarchical_clustering
-    # model = kohonen
+    # model = hierarchical_clustering
+    model = kohonen
     classes = only_genres_df.unique().tolist()
     X_features = movies_df.columns.tolist()
     y_feature = only_genres_df.name
     unsupervised_classifier = UnsupervisedClassifier(model)
 
-    test_samples = 10
-    unsupervised_classifier.fit(movies_df.values, only_genres_df.values, X_features, y_feature)
-    y_predictions = unsupervised_classifier.predict(movies_df.values[:test_samples])
+    test_samples = 250
+    unsupervised_classifier.fit(
+        movies_df.values, only_genres_df.values, X_features, y_feature)
+    y_predictions = unsupervised_classifier.predict(
+        movies_df.values[:test_samples])
     y = only_genres_df.values[:test_samples]
 
     # ------- PLOTS ------- #
@@ -124,3 +127,8 @@ if __name__ == "__main__":
 
     # Plot Confusion Matrix
     plot_cf_matrix(y, y_predictions, labels=classes)
+
+    # Plot kohonen matrix with clusters
+    kohonen_predictions = unsupervised_classifier.model.predict(
+        movies_df.values)
+    plot_kohonen_matrix_predictions(kohonen, y_predictions, kohonen_predictions, classes)
