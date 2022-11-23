@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 
-def generate_dataset(genres_to_analyze=["Adventure", "Comedy", "Drama"], standardize=True, frac=None, random_state=1, n_samples=None):
+def generate_dataset(genres_to_analyze=["Action", "Comedy", "Drama"], standardize=True, frac=None, random_state=1, n_samples=None):
     movies_df = pd.read_csv(
         "machine-learning/data/movie_data.csv", header=0, sep=';')
     # TODO: release_date should be discretized instead of dropped?
