@@ -1,0 +1,10 @@
+{'K': 5, 'kohonen_initial_lr': 0.1, 'kohonen_initial_radius': 2, 'max_iter': 200, 'model': 'kohonen', 'random_state': 1}
+              precision    recall  f1-score   support
+
+   Adventure       0.70      0.23      0.34        84
+      Comedy       0.54      0.73      0.62       184
+       Drama       0.64      0.62      0.63       239
+
+    accuracy                           0.60       507
+   macro avg       0.63      0.53      0.53       507
+weighted avg       0.62      0.60      0.58       507

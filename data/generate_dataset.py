@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 
-def generate_dataset(genres_to_analyze=["Adventure", "Comedy", "Drama"], standardize=True):
+def generate_dataset(genres_to_analyze=["Adventure", "Comedy", "Drama"], standardize=True, frac=None, random_state=1, n_samples=None):
     movies_df = pd.read_csv(
         "machine-learning/data/movie_data.csv", header=0, sep=';')
     # TODO: release_date should be discretized instead of dropped?
@@ -27,8 +27,10 @@ def generate_dataset(genres_to_analyze=["Adventure", "Comedy", "Drama"], standar
         # get only genres to analyze
         movies_df = movies_df[movies_df['genres'].isin(genres_to_analyze)]
 
-    # TODO: SACAR ESTO, ES PARA TESTING
-    # movies_df = movies_df.sample(frac=0.25, random_state=random_state)
+    if frac:
+        movies_df = movies_df.sample(frac=frac, random_state=random_state)
+    elif n_samples:
+        movies_df = movies_df.sample(n=n_samples, random_state=random_state)
 
     only_genres_df = movies_df[["genres"]]
     # once removed not interesting genres, we remove the column for the grouping process over numerical variables

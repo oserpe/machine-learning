@@ -1,0 +1,10 @@
+{'K': 5, 'max_iter': 100, 'model': 'kmeans', 'random_state': 0}
+              precision    recall  f1-score   support
+
+   Adventure       0.68      0.25      0.37        84
+      Comedy       0.55      0.63      0.59       184
+       Drama       0.57      0.63      0.60       239
+
+    accuracy                           0.57       507
+   macro avg       0.60      0.50      0.52       507
+weighted avg       0.58      0.57      0.56       507

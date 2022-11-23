@@ -1,5 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from .plot_2d_clusters import plot_2d_clusters_scatter
+
+from .pca import apply_pca_to_data
 from ..models.k_means import KMeans
 from ..models.hierarchical_clustering import HierarchicalClustering
 from ..models.kohonen import Kohonen
@@ -99,15 +103,43 @@ def n_k_fold(model, movies_df, only_genres_df):
                           k=k, X_features=X_features, y_feature=y_feature, classes=classes)
 
 
+def pca_plot(X, model, title):
+    pca, pca_data = apply_pca_to_data(data=X, n_components=2)
+
+    # fit the model
+    model.fit(pca_data)
+
+    pca_data_df = pd.DataFrame(pca_data, columns=["PC1", "PC2"])
+
+    # get the labels
+    df_clusters = []
+    for i, cluster in enumerate(model.get_clusters()):
+        df_points = pd.DataFrame(cluster.points, columns=pca_data_df.columns)
+        df_points["cluster"] = i
+        df_merged = pd.merge(pca_data_df, df_points)
+        df_clusters.append(df_merged)
+
+    # flatten the list
+    df_clusters = [item for sublist in df_clusters for item in sublist]
+
+    # separate labels from data
+    df_clusters = pd.DataFrame(df_clusters)
+    labels = df_clusters["cluster"].to_numpy()
+    df_clusters = df_clusters.drop(columns=["cluster"])
+
+    # plot the data
+    plot_2d_clusters_scatter(df_clusters, labels, title=title)
+
+
 if __name__ == "__main__":
     random_state = 1
 
-    movies_df, only_genres_df = generate_dataset_all_genres_dataset()
-    # movies_df, only_genres_df = generate_dataset()
+    # movies_df, only_genres_df = generate_dataset_all_genres_dataset()
+    movies_df, only_genres_df = generate_dataset()
 
     # ------- PLOTS ------- #
     # Plot metodo del codo para elegir K en K_means
-    elbow_method(movies_df.values, [1,2,3,4,6,8], 5, random_state)
+    # elbow_method(movies_df.values, [1, 2, 3, 4, 6, 8], 5, random_state)
 
     # Plot "model" n k fold
     # model = "kohonen"
@@ -116,3 +148,7 @@ if __name__ == "__main__":
     # kohonen_matrix_predictions(movies_df, only_genres_df)
 
     # plot_kohonen_clustering(movies_df)
+
+    # Plot de PCA de KMeans
+    k_means = KMeans(K=3, max_iter=100, random_state=random_state)
+    pca_plot(movies_df, k_means, "KMeans Clustering with PCA")

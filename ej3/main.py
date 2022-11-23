@@ -9,12 +9,11 @@ from ..data.data_categorization import categorize_data_with_equal_width
 from matplotlib import pyplot as plt
 
 
-
 def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="kmeans", K=1, max_iter=100, random_state=0, verbose=False), param_grid={
-        'K': range(3, 10),
+        'K': range(3, 6),
         'max_iter': range(100, 500, 100),
-        'random_state': range(0, 5),
+        'random_state': range(0, 3),
         'model': ['kmeans']
     }, cv=5, n_jobs=-1, verbose=3)
 
@@ -35,10 +34,10 @@ def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
 
 def find_hyperparameters_kohonen(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="kohonen", K=1, max_iter=100, random_state=0, verbose=False), param_grid={
-        'K': [3, 4, 5, 6],
-        'max_iter': [100, 200, 300],
-        'random_state': [0, 1, 2],
-        'kohonen_initial_lr': [0.01, 0.1, 0.5, 1],
+        'K': [3, 4, 5],
+        'max_iter': [100, 200],
+        'random_state': [0, 1],
+        'kohonen_initial_lr': [0.01, 0.1],
         'kohonen_initial_radius': [1, 2, 3],
         'model': ['kohonen']
     }, cv=5, n_jobs=-1, verbose=3)
@@ -60,8 +59,7 @@ def find_hyperparameters_kohonen(X_train, y_train, X_test, y_test):
 
 def find_hyperparameters_hierarchical(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="hierarchical", K=1, max_iter=None, random_state=0, verbose=False), param_grid={
-        'K': range(3, 10),
-        'random_state': range(0, 5),
+        'K': range(2, 5),
         'hierarchical_distance_metric': [ClusteringDistance.CENTROID, ClusteringDistance.MAXIMUM, ClusteringDistance.MINIMUM, ClusteringDistance.AVERAGE],
         'model': ['hierarchical']
     }, cv=5, n_jobs=-1, verbose=3)
@@ -88,15 +86,19 @@ def plot_genres_impact():
     key_column = "genres"
     discrete_columns = ["budget", "revenue", "popularity"]
     for column in movies_df.columns.drop(discrete_columns):
-        display_data = data_df.groupby([column, key_column])[column].count().unstack(key_column)
+        display_data = data_df.groupby([column, key_column])[
+            column].count().unstack(key_column)
 
-        display_data.plot(kind='bar', rot=0, stacked=True, ylabel="Cantidad de ejemplares")
+        display_data.plot(kind='bar', rot=0, stacked=True,
+                          ylabel="Cantidad de ejemplares")
 
         plt.show(block=True)
 
     for column in discrete_columns:
-        display_data = categorize_data_with_equal_width(data_df, {column: 25000})
-        display_data = display_data.groupby([column, key_column])[column].count().unstack(key_column)
+        display_data = categorize_data_with_equal_width(
+            data_df, {column: 25000})
+        display_data = display_data.groupby([column, key_column])[
+            column].count().unstack(key_column)
 
         plt.hist(display_data, edgecolor='black', stacked=True)
         plt.legend(display_data.columns.values)
@@ -105,11 +107,13 @@ def plot_genres_impact():
         plt.ylabel("Cantidad de ejemplares")
         plt.show(block=True)
 
+
 if __name__ == "__main__":
     # plot_genres_impact()
     random_state = 1
-    
-    movies_df, only_genres_df = generate_dataset()
+
+    movies_df, only_genres_df = generate_dataset(
+        n_samples=1000, random_state=random_state)
 
     X_features = movies_df.columns.tolist()
 
@@ -118,7 +122,7 @@ if __name__ == "__main__":
 
     # find_hyperparameters_kmeans(
     #     X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-    find_hyperparameters_kohonen(
-        X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-    # find_hyperparameters_hierarchical(
+    # find_hyperparameters_kohonen(
     #     X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
+    find_hyperparameters_hierarchical(
+        X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
