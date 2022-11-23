@@ -26,7 +26,7 @@ class Metrics:
         return train_dataset, test_dataset
 
     @staticmethod
-    def k_fold_cross_validation(x, y, k: int, folds_to_return: int = None):
+    def k_fold_cross_validation(x, y, k: int, X_features: list = None, y_features: list = None, folds_to_return: int = None):
         if k <= 0 or k > len(x):
             raise ValueError(
                 "k must be greater than 0 and less than the number of rows in the dataset")
@@ -63,6 +63,17 @@ class Metrics:
                 [y[:i * fold_len],
                  y[(i + 1) * fold_len:]])
 
+            # If df_columns is not None, then we need to create a dataframe for both sets
+            if X_features is not None:
+                x_train = pd.DataFrame(
+                    x_train, columns=X_features)
+                x_test = pd.DataFrame(
+                    x_test, columns=X_features)
+                y_train = pd.DataFrame(
+                    y_train, columns=y_features)
+                y_test = pd.DataFrame(
+                    y_test, columns=y_features)
+
             # Load the test and train sets into the folds
             folds.append({
                 'x_train': x_train,
@@ -74,12 +85,12 @@ class Metrics:
         return folds
 
     @staticmethod
-    def k_fold_cross_validation_eval(x, y, model, k: int, X_features: list = None, y_feature: str = None, classes: list = None):
+    def k_fold_cross_validation_eval(x, y, model, k: int, X_features: list = None, y_features: list = None, classes: list = None):
         if model is None:
             raise ValueError("Model cannot be None")
 
         folds = Metrics.k_fold_cross_validation(
-            x, y, k=k)
+            x, y, k=k, X_features=X_features, y_features=y_features)
 
         # Evaluate the model on each fold
         results = []
@@ -95,10 +106,13 @@ class Metrics:
 
         for fold in folds:
             print("Evaluating fold...")
+
             # Train the model
             x_train = fold['x_train']
             y_train = fold['y_train']
-            model.fit(x_train, y_train, X_features, y_feature)
+
+            model.fit(x_train, y_train)
+
             # Evaluate the model on the test set
             x_test = fold['x_test']
             y_test = fold['y_test']
@@ -107,7 +121,7 @@ class Metrics:
 
             # Compute the metrics
             cf_matrix = Metrics.get_confusion_matrix(
-                y_test,
+                y_test.values.flatten(),
                 predictions,
                 labels=classes)
 
@@ -132,7 +146,7 @@ class Metrics:
         return results, errors, k_metrics_per_class, average_metrics, std_metrics
 
     @staticmethod
-    def n_k_fold_cross_validation_eval(X, y, n, model, k: int, X_features: list = None, y_feature: str = None, classes: list = None):
+    def n_k_fold_cross_validation_eval(X, y, n, model, k: int, X_features: list = None, y_features: list = None, classes: list = None):
         if model is None:
             raise ValueError("Model cannot be None")
 
@@ -159,7 +173,7 @@ class Metrics:
             print(f'Evaluating fold {i+1} of {n}...')
             # Evaluate the model on each fold
             n_results, n_errors, n_k_metrics_per_class, n_average_metrics, n_std_metrics = Metrics.k_fold_cross_validation_eval(
-                X, y, model, k, X_features=X_features, y_feature=y_feature, classes=classes)
+                X, y, model, k, X_features=X_features, y_features=y_features, classes=classes)
 
             # Push the average metrics of the n-k-fold to the total metrics
             for metric_label in k_metrics_per_class:
@@ -203,8 +217,6 @@ class Metrics:
 
         # plot the heatmap with the labels
         fig, ax = plt.subplots(figsize=(10, 10))
-        print(labels)
-        print(values)
         ax = sns.heatmap(values, annot=labels, fmt='', cmap='RdYlGn', xticklabels=xticks,
                          yticklabels=yticks, vmin=0, vmax=1)
         ax.set_title(plot_title)
@@ -290,7 +302,7 @@ class Metrics:
     def plot_confusion_matrix_heatmap(cf_matrix, predicted_title="Predicted label", actual_title="Truth label", plot_title=""):
         # Create a new dataframe with the percentages of each cell
         cf_matrix_perc = cf_matrix.div(cf_matrix.sum(axis=1), axis=0) * 100
-    
+
         # Build the heatmap annotation with the number and percentage of each cell
         labels = []
         for i in range(len(cf_matrix.index)):

@@ -25,6 +25,7 @@ class HierarchicalClustering(BaseEstimator):
                     .distance_to_cluster(current_clusters[j], self.distance_metric)
 
         while len(current_clusters) > self.K:
+            print(len(current_clusters))
             min_cluster_distance = math.inf
             cluster_point_1 = None
             cluster_point_2 = None

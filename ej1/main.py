@@ -44,8 +44,15 @@ if __name__ == "__main__":
 
     # number of duplicated rows
     print("Number of duplicated rows: ", len(
-        movies_df) - len(unique_df))
+        movies_df) - len(unique_df), ", ", len(unique_df))
 
+    unique_withoutna_df = unique_df.dropna()
+    # number of rows with at least one null value
+    print("Number of rows with at least one null value: ", len(
+        unique_df) - len(unique_withoutna_df))
+    
+    print("Final dataset length: ", len(unique_withoutna_df))
+    
     unique_df = unique_df.drop(
         columns=["original_title", "imdb_id", "overview"])
 
