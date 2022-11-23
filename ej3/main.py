@@ -7,7 +7,8 @@ from ..models.cluster import ClusteringDistance
 from ..data.generate_dataset import generate_dataset
 from ..data.data_categorization import categorize_data_with_equal_width
 from matplotlib import pyplot as plt
-
+from ..models.hierarchical_clustering import HierarchicalClustering
+from matplotlib.ticker import FormatStrFormatter
 
 
 def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
@@ -86,24 +87,43 @@ def plot_genres_impact():
     movies_df, only_genres_df = generate_dataset(standardize=False)
     data_df = pd.concat([movies_df, only_genres_df], axis=1)
     key_column = "genres"
-    discrete_columns = ["budget", "revenue", "popularity"]
-    for column in movies_df.columns.drop(discrete_columns):
+    round_decimals_columns = ["vote_average"]
+    round_1_unit_columns = ["year", "popularity","runtime"]
+    round_3_unit_columns = ["vote_count"]
+    round_8_unit_columns = ["budget", "revenue"]
+    
+    for column in movies_df.columns.drop(round_1_unit_columns, round_3_unit_columns, round_8_unit_columns):
         display_data = data_df.groupby([column, key_column])[column].count().unstack(key_column)
-
         display_data.plot(kind='bar', rot=0, stacked=True, ylabel="Cantidad de ejemplares")
-
         plt.show(block=True)
 
-    for column in discrete_columns:
-        display_data = categorize_data_with_equal_width(data_df, {column: 25000})
-        display_data = display_data.groupby([column, key_column])[column].count().unstack(key_column)
+    # round decimals
+    for column in round_decimals_columns:
+        _round_column_plot(data_df, column, key_column, 0)
 
-        plt.hist(display_data, edgecolor='black', stacked=True)
-        plt.legend(display_data.columns.values)
-        # set title and labels
-        plt.xlabel(column)
-        plt.ylabel("Cantidad de ejemplares")
-        plt.show(block=True)
+    # round 1 unit
+    for column in round_1_unit_columns:
+        _round_column_plot(data_df, column, key_column, 1)
+    
+    # round 3 units
+    for column in round_3_unit_columns:
+        _round_column_plot(data_df, column, key_column, 3)
+
+    # round 8 units
+    for column in round_8_unit_columns:
+        _round_column_plot(data_df, column, key_column, 8)
+
+def _round_column_plot(data_df, column, key_column, round_units):
+    display_data = data_df
+    display_data[column] = data_df[column].apply(lambda x: round(round(x, -round_units)))
+    display_data = display_data.groupby([column, key_column])[column].count().unstack(key_column)
+    display_data.plot(kind='bar', rot=0, stacked=True, ylabel="Cantidad de ejemplares")
+    
+    if column == "revenue":
+        plt.xticks(rotation=20, ha="right")
+    elif column == "year":
+        plt.xticks(rotation=90, ha="right")
+    plt.show(block=True)
 
 if __name__ == "__main__":
     # plot_genres_impact()
