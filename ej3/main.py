@@ -165,15 +165,16 @@ def hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test):
     # Plot metrics heatmap
     plot_metrics_heatmap(cf_matrix)
 
+
 def plot_hierarchical_elbow_method(X_train, y_train):
     unsupervised_classifier = UnsupervisedClassifier(
         "hierarchical", K=1, max_iter=100)
 
     unsupervised_classifier.fit(
         X_train, y_train)
-    # plot elbow method 
+    # plot elbow method
     # !!! CHECK THAT HIERARCHICAL IS SAVING VARIATIONS !!!
-    Ks = list(range(1,21))
+    Ks = list(range(1, 21))
     Ws = []
     print("Training hierarchical")
     for K in Ks:
@@ -190,7 +191,8 @@ def plot_hierarchical_elbow_method(X_train, y_train):
     plt.xlabel("K")
     plt.ylabel("Distancia minima")
     plt.show()
-    
+
+
 def k_means_matrix_predictions(X_train, X_test, y_train, y_test):
     classes = y_test[y_test.columns[0]].unique().tolist()
     unsupervised_classifier = UnsupervisedClassifier(
@@ -244,8 +246,6 @@ def plot_kohonen_clustering(kohonen, X_train, annotations=True):
     plt.show()
 
 
-
-
 def kohonen_matrix_predictions(X_train, X_test, y_train, y_test):
     classes = y_test[y_test.columns[0]].unique().tolist()
     unsupervised_classifier = UnsupervisedClassifier(
@@ -258,7 +258,8 @@ def kohonen_matrix_predictions(X_train, X_test, y_train, y_test):
         X_test)
     y = y_test.values.flatten()
 
-    plot_kohonen_clustering(unsupervised_classifier._model, X_train, annotations=False)
+    plot_kohonen_clustering(
+        unsupervised_classifier._model, X_train, annotations=False)
 
     # Plot confusion matrix
     cf_matrix = plot_cf_matrix(y, y_predictions, labels=classes)
@@ -270,8 +271,7 @@ def kohonen_matrix_predictions(X_train, X_test, y_train, y_test):
     kohonen_predictions = unsupervised_classifier._model.predict(
         X_test.values)
     plot_kohonen_matrix_predictions(
-        unsupervised_classifier._model, y, kohonen_predictions, classes)
-
+        unsupervised_classifier._model, y_predictions, kohonen_predictions, classes)
 
 
 if __name__ == "__main__":
@@ -279,7 +279,6 @@ if __name__ == "__main__":
     random_state = 1
 
     movies_df, only_genres_df = generate_dataset(
-        # n_samples=100,
         random_state=random_state)
 
     X_features = movies_df.columns.tolist()

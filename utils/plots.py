@@ -95,7 +95,7 @@ def plot_kohonen_heatmaps_hit(hit_matrix):
     fig, axs = plt.subplots(1, len(keys))
     # fig.suptitle('Genres Kohonen Heatmaps')
 
-    colors = ["OrRd", "BuGn", "PuBu"]
+    # colors = ["OrRd", "BuGn", "PuBu"]
 
     for i in range(len(keys)):
         genre = keys[i]
@@ -105,11 +105,12 @@ def plot_kohonen_heatmaps_hit(hit_matrix):
             for y in range(K):
                 genre_matrix[x][y] = hit_matrix[x][y][genre]
 
-        sns.heatmap(genre_matrix, ax=axs[i], cmap=colors[i],
+        sns.heatmap(genre_matrix, ax=axs[i], cmap="coolwarm",
                     linewidths=0.5, xticklabels=False, yticklabels=False)
         axs[i].set_title(genre)
 
     plt.show()
+
 
 def plot_metrics_heatmap(cf_matrix):
     metrics_dict, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
