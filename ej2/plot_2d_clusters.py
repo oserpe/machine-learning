@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 def plot_2d_clusters_scatter(x_data, y_data, labels: list[str], title, x_label, y_label):
     plt.figure()
     plt.title(title)
-    plt.scatter(x_data, y_data, c=labels, cmap="rainbow")
+    plt.scatter(x_data, y_data, c=labels, cmap="rainbow", marker="o")
     plt.legend(
         labels,
         loc="upper right",

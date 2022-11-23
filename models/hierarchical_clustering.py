@@ -66,8 +66,9 @@ class HierarchicalClustering(BaseEstimator):
             self.clusters_evolution.append(copy.copy(current_clusters))
             self.distance_evolution.append(min_cluster_distance)
 
-            if len(current_clusters) <= 10: # TODO: FIX MAGIC NUMBER
-                self.variations.append(self.compute_average_variation(current_clusters))
+            if len(current_clusters) <= 10:  # TODO: FIX MAGIC NUMBER
+                self.variations.append(
+                    self.compute_average_variation(current_clusters))
 
         self.clusters = copy.copy(current_clusters)
 
@@ -94,12 +95,16 @@ class HierarchicalClustering(BaseEstimator):
         for cluster in clusters:
             for i in range(len(cluster)):
                 for j in range(i+1, len(cluster)):
-                    total_variation += np.linalg.norm(cluster.points[i] - cluster.points[j], axis=0)
+                    total_variation += np.linalg.norm(
+                        cluster.points[i] - cluster.points[j], axis=0)
 
             if len(cluster) == 0:
                 print("WARNING: empty cluster")
 
         return total_variation/len(clusters)
-    
+
     def get_clusters(self):
         return self.clusters
+
+    def get_kth_cluster(self, k):
+        return self.clusters_evolution[-k]
