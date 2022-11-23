@@ -150,7 +150,7 @@ def _round_column_plot(data_df, column, key_column, round_units):
 def hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test):
     classes = y_test[y_test.columns[0]].unique().tolist()
     unsupervised_classifier = UnsupervisedClassifier(
-        "hierarchical", K=3, max_iter=100)
+        "hierarchical", K=5, max_iter=100, hierarchical_distance_metric=ClusteringDistance.MINIMUM)
 
     unsupervised_classifier.fit(
         X_train, y_train)
@@ -187,7 +187,7 @@ def plot_hierarchical_elbow_method(X_train, y_train):
     plt.show()
 
     # plot distance evolution
-    plt.plot(unsupervised_classifier._model.distance_evolution[-100:])
+    plt.plot(unsupervised_classifier._model.distance_evolution[-100:], list(range(1,101)))
     plt.xlabel("K")
     plt.ylabel("Distancia minima")
     plt.show()
@@ -196,7 +196,7 @@ def plot_hierarchical_elbow_method(X_train, y_train):
 def k_means_matrix_predictions(X_train, X_test, y_train, y_test):
     classes = y_test[y_test.columns[0]].unique().tolist()
     unsupervised_classifier = UnsupervisedClassifier(
-        "kmeans", K=5, max_iter=100, random_state=0)
+        "kmeans", K=3, max_iter=100, random_state=0)
 
     unsupervised_classifier.fit(
         X_train, y_train)
@@ -286,9 +286,9 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(
         movies_df[X_features], only_genres_df, test_size=0.2, random_state=random_state)
 
-    # hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test)
+    hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test)
     # k_means_matrix_predictions(X_train, X_test, y_train, y_test)
-    kohonen_matrix_predictions(X_train, X_test, y_train, y_test)
+    # kohonen_matrix_predictions(X_train, X_test, y_train, y_test)
     exit()
 
     # Plot "model" n k fold
