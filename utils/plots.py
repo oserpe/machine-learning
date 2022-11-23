@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import re as regex
 from .metrics import Metrics
+import copy
 
 
 def plot_n_k_fold_cv_eval(X, y, n, model, k: int, X_features: list = None, y_features: list = None, classes: list = None):
@@ -48,16 +49,20 @@ def plot_kohonen_matrix_predictions(kohonen_model, y_values, kohonen_predictions
     for x, y, genre in zip(x_indexes, y_indexes, y_values):
         kohonen_matrix[x][y][genre] += 1
 
+    hit_matrix = copy.deepcopy(kohonen_matrix)
+
     # Convert every dict to str
     for x in range(K):
         for y in range(K):
             # Get the percentage for each genre
             total = sum(kohonen_matrix[x][y].values())
-            for key in keys:
-                
-                percentage = 0
+            for idx, key in enumerate(keys):
+                probability = 0
+                percentage = probability
+
                 if total != 0:
-                    percentage = round(kohonen_matrix[x][y][key] / total * 100, 2)
+                    probability = kohonen_matrix[x][y][key] / total
+                    percentage = round(probability * 100, 2)
 
                 kohonen_matrix[x][y][
                     key] = f'{kohonen_matrix[x][y][key]} - {percentage}%'
@@ -70,4 +75,33 @@ def plot_kohonen_matrix_predictions(kohonen_model, y_values, kohonen_predictions
     kohonen_matrix_dummy = np.ones((K, K))
     sns.heatmap(kohonen_matrix_dummy, cmap="Greys_r", annot=kohonen_matrix, fmt="s",
                 cbar=False, linewidths=0.5, xticklabels=False, yticklabels=False)
+    plt.show()
+
+    # Plot hit heatmaps
+    plot_kohonen_heatmaps_hit(hit_matrix)
+
+
+def plot_kohonen_heatmaps_hit(hit_matrix):
+    # Given a matrix where each cell is a dict with the number of hits for each genre, plot a heatmap
+    # for each genre
+    K = hit_matrix.shape[0]
+    keys = list(hit_matrix[0][0].keys())
+
+    fig, axs = plt.subplots(1, len(keys))
+    # fig.suptitle('Genres Kohonen Heatmaps')
+
+    colors = ["OrRd", "BuGn", "PuBu"]
+
+    for i in range(len(keys)):
+        genre = keys[i]
+        genre_matrix = np.zeros((K, K))
+
+        for x in range(K):
+            for y in range(K):
+                genre_matrix[x][y] = hit_matrix[x][y][genre]
+
+        sns.heatmap(genre_matrix, ax=axs[i], cmap=colors[i],
+                    linewidths=0.5, xticklabels=False, yticklabels=False)
+        axs[i].set_title(genre)
+
     plt.show()
