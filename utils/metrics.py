@@ -217,8 +217,6 @@ class Metrics:
 
         # plot the heatmap with the labels
         fig, ax = plt.subplots(figsize=(10, 10))
-        print(labels)
-        print(values)
         ax = sns.heatmap(values, annot=labels, fmt='', cmap='RdYlGn', xticklabels=xticks,
                          yticklabels=yticks, vmin=0, vmax=1)
         ax.set_title(plot_title)

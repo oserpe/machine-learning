@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 import seaborn as sns
 from ..models.unsupervised_classifier import UnsupervisedClassifier
-from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend
+from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend, plot_metrics_heatmap
 from ..data.generate_dataset import generate_dataset
 
 
@@ -32,13 +32,13 @@ def elbow_method(X, Ks, times, initial_random_state):
         range(times)), X_label="K", Y_label="W")
 
 
-def plot_kohonen_clustering(movies_df, annotations = True):
+def plot_kohonen_clustering(movies_df, annotations=True):
     kohonen = Kohonen(max_iter=100, random_state=random_state,
                       initial_radius=4, initial_lr=0.1, K=5)
     kohonen.fit(movies_df.values)
 
     # For every feature, plot the heatmap with its weights
-    # We have 9 features
+    # We have 10 features
     rows = 4
     cols = 3
     fig, axes = plt.subplots(rows, cols)
@@ -77,6 +77,12 @@ def kohonen_matrix_predictions(movies_df, only_genres_df):
         movies_df)
     y = only_genres_df.values.flatten()
 
+    # Plot confusion matrix
+    cf_matrix = plot_cf_matrix(y, y_predictions, labels=classes)
+
+    # Plot metrics heatmap
+    metrics_dict, metrics_df = plot_metrics_heatmap(cf_matrix)
+
     # Plot kohonen matrix with clusters
     kohonen_predictions = unsupervised_classifier._model.predict(
         movies_df.values)
@@ -112,7 +118,8 @@ if __name__ == "__main__":
     # Plot "model" n k fold
     model = "kohonen"
     # n_k_fold(model, movies_df, only_genres_df)
+    
+    plot_kohonen_clustering(movies_df, annotations=False)
 
     kohonen_matrix_predictions(movies_df, only_genres_df)
 
-    # plot_kohonen_clustering(movies_df)

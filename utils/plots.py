@@ -19,6 +19,7 @@ def plot_n_k_fold_cv_eval(X, y, n, model, k: int, X_features: list = None, y_fea
 def plot_cf_matrix(y, y_predicted, labels=None):
     cf_matrix = Metrics.get_confusion_matrix(y, y_predicted, labels)
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    return cf_matrix
 
 
 def plot_curves_with_legend(inputs, outputs, legends=None, X_label="X", Y_label="Y"):
@@ -105,3 +106,8 @@ def plot_kohonen_heatmaps_hit(hit_matrix):
         axs[i].set_title(genre)
 
     plt.show()
+
+def plot_metrics_heatmap(cf_matrix):
+    metrics_dict, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
+    Metrics.plot_metrics_heatmap(metrics_dict)
+    return metrics_dict, metrics_df
