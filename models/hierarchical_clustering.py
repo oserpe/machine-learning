@@ -66,8 +66,8 @@ class HierarchicalClustering(BaseEstimator):
             self.clusters_evolution.append(copy.copy(current_clusters))
             self.distance_evolution.append(min_cluster_distance)
 
-            if len(current_clusters) <= 10: # TODO: FIX MAGIC NUMBER
-                self.variations.append(self.compute_average_variation(current_clusters))
+            # if len(current_clusters) <= 25: # TODO: FIX MAGIC NUMBER
+            #     self.variations.append(self.compute_average_variation(current_clusters))
 
         self.clusters = copy.copy(current_clusters)
 

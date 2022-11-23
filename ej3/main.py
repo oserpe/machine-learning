@@ -165,32 +165,32 @@ def hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test):
     # Plot metrics heatmap
     plot_metrics_heatmap(cf_matrix)
 
-
-def plot_hierarchical_elbow_method():
+def plot_hierarchical_elbow_method(X_train, y_train):
     unsupervised_classifier = UnsupervisedClassifier(
         "hierarchical", K=1, max_iter=100)
 
     unsupervised_classifier.fit(
         X_train, y_train)
-    # plot elbow method
-    Ks = list(range(1, 11))
+    # plot elbow method 
+    # !!! CHECK THAT HIERARCHICAL IS SAVING VARIATIONS !!!
+    Ks = list(range(1,21))
     Ws = []
     print("Training hierarchical")
-    # for K in Ks:
-    #     Ws.append(unsupervised_classifier._model.variations[-K])
+    for K in Ks:
+        Ws.append(unsupervised_classifier._model.variations[-K])
 
-    # plt.plot(Ks, Ws)
-    # plt.xlabel("K")
-    # plt.ylabel("W")
-    # plt.show()
+    plt.plot(Ks, Ws)
+    plt.xlabel("K")
+    plt.ylabel("W")
+    plt.yscale("log")
+    plt.show()
 
-    # # plot distance evolution
-    # plt.plot(unsupervised_classifier._model.distance_evolution[-100:])
-    # plt.xlabel("K")
-    # plt.ylabel("Distancia minima")
-    # plt.show()
-
-
+    # plot distance evolution
+    plt.plot(unsupervised_classifier._model.distance_evolution[-100:])
+    plt.xlabel("K")
+    plt.ylabel("Distancia minima")
+    plt.show()
+    
 def k_means_matrix_predictions(X_train, X_test, y_train, y_test):
     classes = y_test[y_test.columns[0]].unique().tolist()
     unsupervised_classifier = UnsupervisedClassifier(
