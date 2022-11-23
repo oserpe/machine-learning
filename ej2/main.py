@@ -15,6 +15,7 @@ import seaborn as sns
 from ..models.unsupervised_classifier import UnsupervisedClassifier
 from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend, plot_metrics_heatmap
 from ..data.generate_dataset import generate_dataset
+from ..models.kohonen import Kohonen
 
 
 def elbow_method(X, Ks, times, initial_random_state):
