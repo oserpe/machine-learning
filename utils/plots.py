@@ -4,21 +4,24 @@ import seaborn as sns
 import re as regex
 from .metrics import Metrics
 
+
 def plot_n_k_fold_cv_eval(X, y, n, model, k: int, X_features: list = None, y_features: list = None, classes: list = None):
     print("Processing N-K-Fold CV evaluation...")
     avg_metrics, std_metrics = Metrics.n_k_fold_cross_validation_eval(
         X, y, n, model, k, X_features, y_features, classes)
-    
+
     print("Plotting N-K-Fold CV evaluation...")
     Metrics.plot_metrics_heatmap_std(
         avg_metrics, std_metrics, plot_title=f'K Fold Cross Validation Evaluation')
 
-def plot_cf_matrix(y, y_predicted, labels = None): 
+
+def plot_cf_matrix(y, y_predicted, labels=None):
     cf_matrix = Metrics.get_confusion_matrix(y, y_predicted, labels)
     Metrics.plot_confusion_matrix_heatmap(cf_matrix)
 
-def plot_curves_with_legend(inputs, outputs, legends = None, X_label = "X", Y_label = "Y"):
-    colors = sns.color_palette("hls", len(outputs)) 
+
+def plot_curves_with_legend(inputs, outputs, legends=None, X_label="X", Y_label="Y"):
+    colors = sns.color_palette("hls", len(outputs))
     for i in range(len(outputs)):
         plt.plot(inputs, outputs[i], label=legends[i], color=colors[i])
 
@@ -26,6 +29,7 @@ def plot_curves_with_legend(inputs, outputs, legends = None, X_label = "X", Y_la
     plt.xlabel(X_label)
     plt.ylabel(Y_label)
     plt.show()
+
 
 def plot_kohonen_matrix_predictions(kohonen_model, y_values, kohonen_predictions, classes):
     K = kohonen_model.K
@@ -47,6 +51,17 @@ def plot_kohonen_matrix_predictions(kohonen_model, y_values, kohonen_predictions
     # Convert every dict to str
     for x in range(K):
         for y in range(K):
+            # Get the percentage for each genre
+            total = sum(kohonen_matrix[x][y].values())
+            for key in keys:
+                
+                percentage = 0
+                if total != 0:
+                    percentage = round(kohonen_matrix[x][y][key] / total * 100, 2)
+
+                kohonen_matrix[x][y][
+                    key] = f'{kohonen_matrix[x][y][key]} - {percentage}%'
+
             value = str(kohonen_matrix[x][y]).replace(",", "\n")
             value = regex.sub(r"[{}']", "", value)
             kohonen_matrix[x][y] = value

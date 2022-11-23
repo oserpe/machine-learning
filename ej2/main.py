@@ -115,4 +115,4 @@ if __name__ == "__main__":
 
     kohonen_matrix_predictions(movies_df, only_genres_df)
 
-    plot_kohonen_clustering(movies_df)
+    # plot_kohonen_clustering(movies_df)
