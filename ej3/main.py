@@ -9,7 +9,21 @@ from ..data.data_categorization import categorize_data_with_equal_width
 from matplotlib import pyplot as plt
 from ..models.hierarchical_clustering import HierarchicalClustering
 from matplotlib.ticker import FormatStrFormatter
+from ..utils.plots import plot_n_k_fold_cv_eval, plot_cf_matrix, plot_kohonen_matrix_predictions, plot_curves_with_legend, plot_metrics_heatmap
+from ..models.kohonen import Kohonen
+import seaborn as sns
 
+def n_k_fold(model, movies_df, only_genres_df):
+    classes = only_genres_df[only_genres_df.columns[0]].unique().tolist()
+    X_features = movies_df.columns.tolist()
+    y_features = only_genres_df.columns.tolist()
+    unsupervised_classifier = UnsupervisedClassifier(model, K=3, max_iter=100)
+
+    # Plot N-K-Fold
+    n = 5
+    k = 5
+    plot_n_k_fold_cv_eval(movies_df.values, only_genres_df.values, n=n, model=unsupervised_classifier,
+                          k=k, X_features=X_features, y_features=y_features, classes=classes)
 
 def find_hyperparameters_kmeans(X_train, y_train, X_test, y_test):
     grid = GridSearchCV(UnsupervisedClassifier(model="kmeans", K=1, max_iter=100, random_state=0, verbose=False), param_grid={
@@ -124,17 +138,148 @@ def _round_column_plot(data_df, column, key_column, round_units):
         plt.xticks(rotation=90, ha="right")
     plt.show(block=True)
 
+def hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test):
+    classes = y_test[y_test.columns[0]].unique().tolist()
+    unsupervised_classifier = UnsupervisedClassifier(
+        "hierarchical", K=3, max_iter=100)
+
+    unsupervised_classifier.fit(
+        X_train, y_train)
+    
+    y_predictions = unsupervised_classifier.predict(
+        X_test)
+    y = y_test.values.flatten()
+
+    # Plot confusion matrix
+    cf_matrix = plot_cf_matrix(y, y_predictions, labels=classes)
+
+    # Plot metrics heatmap
+    plot_metrics_heatmap(cf_matrix)
+
+def plot_hierarchical_elbow_method():
+    unsupervised_classifier = UnsupervisedClassifier(
+        "hierarchical", K=1, max_iter=100)
+
+    unsupervised_classifier.fit(
+        X_train, y_train)
+    # plot elbow method
+    Ks = list(range(1,11))
+    Ws = []
+    print("Training hierarchical")
+    # for K in Ks:
+    #     Ws.append(unsupervised_classifier._model.variations[-K])
+
+    # plt.plot(Ks, Ws)
+    # plt.xlabel("K")
+    # plt.ylabel("W")
+    # plt.show()
+
+    # # plot distance evolution
+    # plt.plot(unsupervised_classifier._model.distance_evolution[-100:])
+    # plt.xlabel("K")
+    # plt.ylabel("Distancia minima")
+    # plt.show()
+    
+def k_means_matrix_predictions(X_train, X_test, y_train, y_test):
+    classes = y_test[y_test.columns[0]].unique().tolist()
+    unsupervised_classifier = UnsupervisedClassifier(
+        "kmeans", K=5, max_iter=100, random_state=0)
+
+    unsupervised_classifier.fit(
+        X_train, y_train)
+
+    y_predictions = unsupervised_classifier.predict(
+        X_test)
+    y = y_test.values.flatten()
+
+    # Plot confusion matrix
+    cf_matrix = plot_cf_matrix(y, y_predictions, labels=classes)
+
+    # Plot metrics heatmap
+    plot_metrics_heatmap(cf_matrix)
+    
+# def plot_kohonen_clustering(X_train, annotations=True):
+#     kohonen = Kohonen(max_iter=100, random_state=random_state,
+#                       initial_radius=4, initial_lr=0.1, K=5)
+#     kohonen.fit(X_train.values)
+
+#     # For every feature, plot the heatmap with its weights
+#     # We have 10 features
+#     rows = 4
+#     cols = 3
+#     fig, axes = plt.subplots(rows, cols)
+#     for index, feature in enumerate(X_train.columns):
+#         row_index = index // cols
+#         col_index = index % cols
+#         feature_weights = kohonen.get_feature_weights(index)
+#         sns.heatmap(feature_weights, cmap="YlGnBu", xticklabels=False,
+#                     yticklabels=False, ax=axes[row_index, col_index])
+#         axes[row_index, col_index].set_title(feature)
+#     plt.show()
+
+#     # Plot the number of elements per cluster
+#     cluster_matrix = kohonen.clusters_to_matrix()
+#     # Plot heatmap without x and y ticks
+#     sns.heatmap(cluster_matrix, annot=annotations, cmap="YlGnBu",
+#                 linewidths=0.5, xticklabels=False, yticklabels=False)
+#     plt.show()
+
+#     # Plot U-Matrix
+#     u_matrix = kohonen.get_u_matrix()
+#     # Plot heatmap
+#     sns.heatmap(u_matrix, cmap="Greys_r", annot=annotations, fmt=".2f",
+#                 linewidths=0.5, xticklabels=False, yticklabels=False)
+#     plt.show()
+
+
+# def kohonen_matrix_predictions(X_train, X_test, y_train, y_test):
+#     classes = y_test[y_test.columns[0]].unique().tolist()
+#     unsupervised_classifier = UnsupervisedClassifier(
+#         "kohonen", K=5, max_iter=100)
+
+#     unsupervised_classifier.fit(
+#         X_train, y_train)
+    
+#     y_predictions = unsupervised_classifier.predict(
+#         X_test)
+#     y = y_test.values.flatten()
+
+#     # Plot confusion matrix
+#     cf_matrix = plot_cf_matrix(y, y_predictions, labels=classes)
+
+#     # Plot metrics heatmap
+#     plot_metrics_heatmap(cf_matrix)
+
+#     # Plot kohonen matrix with clusters
+#     kohonen_predictions = unsupervised_classifier._model.predict(
+#         X_test.values)
+#     plot_kohonen_matrix_predictions(
+#         unsupervised_classifier._model, y, kohonen_predictions, classes)
+    
 if __name__ == "__main__":
     # plot_genres_impact()
     random_state = 1
 
     movies_df, only_genres_df = generate_dataset(
-        n_samples=1000, random_state=random_state)
+        # n_samples=1000, 
+        random_state=random_state)
+
 
     X_features = movies_df.columns.tolist()
 
     X_train, X_test, y_train, y_test = train_test_split(
         movies_df[X_features], only_genres_df, test_size=0.2, random_state=random_state)
+
+    
+    hierarchichal_matrix_predictions(X_train, X_test, y_train, y_test)
+    # k_means_matrix_predictions(X_train, X_test, y_train, y_test)
+    # kohonen_matrix_predictions(X_train, X_test, y_train, y_test)
+    exit()
+    
+    # Plot "model" n k fold
+    # model = "kohonen"
+    # n_k_fold(model, X_train, y_train)
+    # plot_kohonen_clustering(X_train, annotations=False)
 
     # find_hyperparameters_kmeans(
     #     X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)

@@ -25,7 +25,11 @@ def plot_cf_matrix(y, y_predicted, labels=None):
 def plot_curves_with_legend(inputs, outputs, legends=None, X_label="X", Y_label="Y"):
     colors = sns.color_palette("hls", len(outputs))
     for i in range(len(outputs)):
-        plt.plot(inputs, outputs[i], label=legends[i], color=colors[i])
+        if legends is not None:
+            plt.plot(inputs, outputs[i], color=colors[i],
+                     label=legends[i])
+        else:
+            plt.plot(inputs, outputs[i], color=colors[i])
 
     plt.legend()
     plt.xlabel(X_label)

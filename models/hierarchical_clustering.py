@@ -12,6 +12,7 @@ class HierarchicalClustering(BaseEstimator):
         self.distance_metric = distance_metric
         self.clusters_evolution = []
         self.distance_evolution = []
+        self.variations = []
 
     def fit(self, X):
         # Initialize clusters for every point
@@ -25,7 +26,9 @@ class HierarchicalClustering(BaseEstimator):
                     .distance_to_cluster(current_clusters[j], self.distance_metric)
 
         while len(current_clusters) > self.K:
-            print(len(current_clusters))
+            if len(current_clusters) % 100 == 0:
+                print(len(current_clusters))
+
             min_cluster_distance = math.inf
             cluster_point_1 = None
             cluster_point_2 = None
@@ -63,6 +66,9 @@ class HierarchicalClustering(BaseEstimator):
             self.clusters_evolution.append(copy.copy(current_clusters))
             self.distance_evolution.append(min_cluster_distance)
 
+            if len(current_clusters) <= 10: # TODO: FIX MAGIC NUMBER
+                self.variations.append(self.compute_average_variation(current_clusters))
+
         self.clusters = copy.copy(current_clusters)
 
     def find_closest_cluster_to_point(self, point):
@@ -83,5 +89,17 @@ class HierarchicalClustering(BaseEstimator):
 
         return clusters_index
 
+    def compute_average_variation(self, clusters):
+        total_variation = 0
+        for cluster in clusters:
+            for i in range(len(cluster)):
+                for j in range(i+1, len(cluster)):
+                    total_variation += np.linalg.norm(cluster.points[i] - cluster.points[j], axis=0)
+
+            if len(cluster) == 0:
+                print("WARNING: empty cluster")
+
+        return total_variation/len(clusters)
+    
     def get_clusters(self):
         return self.clusters
