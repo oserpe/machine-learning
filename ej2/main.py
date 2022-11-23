@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from ..models.cluster import ClusteringDistance
+
 from .plot_2d_clusters import plot_2d_clusters_scatter
 
 from .pca import apply_pca_to_data
@@ -116,23 +118,22 @@ def pca_plot(X, model, title):
     pca_data_df = pd.DataFrame(pca_data, columns=["PC1", "PC2"])
 
     # get the labels
-    df_clusters = []
+    df_clusters = pd.DataFrame()
     for i, cluster in enumerate(model.get_clusters()):
         df_points = pd.DataFrame(cluster.points, columns=pca_data_df.columns)
         df_points["cluster"] = i
         df_merged = pd.merge(pca_data_df, df_points)
-        df_clusters.append(df_merged)
-
-    # flatten the list
-    df_clusters = [item for sublist in df_clusters for item in sublist]
+        df_clusters = pd.concat([df_clusters, df_merged])
 
     # separate labels from data
-    df_clusters = pd.DataFrame(df_clusters)
-    labels = df_clusters["cluster"].to_numpy()
+    labels = df_clusters["cluster"].to_list()
     df_clusters = df_clusters.drop(columns=["cluster"])
 
+    x_data = df_clusters["PC1"].to_list()
+    y_data = df_clusters["PC2"].to_list()
     # plot the data
-    plot_2d_clusters_scatter(df_clusters, labels, title=title)
+    plot_2d_clusters_scatter(x_data, y_data, labels, x_label=f"PC1 {pca.explained_variance_ratio_[0]*100:.2f}%",
+                             y_label=f"PC2 {pca.explained_variance_ratio_[1]*100:.2f}%", title=title)
 
 
 if __name__ == "__main__":
@@ -140,22 +141,31 @@ if __name__ == "__main__":
 
     movies_df, only_genres_df = generate_dataset()
 
-    movies_df = movies_df.head(100)
-    only_genres_df = only_genres_df.head(100)
+    # movies_df = movies_df.head(100)
+    # only_genres_df = only_genres_df.head(100)
 
-    # ------- PLOTS ------- #
-    # Plot metodo del codo para elegir K en K_means
-    # elbow_method(movies_df.values, [1, 2, 3, 4, 6, 8], 5, random_state)
+    # # ------- PLOTS ------- #
+    # # Plot metodo del codo para elegir K en K_means
+    # # elbow_method(movies_df.values, [1, 2, 3, 4, 6, 8], 5, random_state)
 
-    # Plot "model" n k fold
-    model = "kohonen"
-    # n_k_fold(model, movies_df, only_genres_df)
-    
-    plot_kohonen_clustering(movies_df, annotations=False)
+    # # Plot "model" n k fold
+    # model = "kohonen"
+    # # n_k_fold(model, movies_df, only_genres_df)
 
-    kohonen_matrix_predictions(movies_df, only_genres_df)
+    # plot_kohonen_clustering(movies_df, annotations=False)
 
+    # kohonen_matrix_predictions(movies_df, only_genres_df)
 
     # Plot de PCA de KMeans
     k_means = KMeans(K=3, max_iter=100, random_state=random_state)
     pca_plot(movies_df, k_means, "KMeans Clustering with PCA")
+
+    # Plot de PCA de Kohonen
+    kohonen = Kohonen(K=5, max_iter=200, initial_lr=0.1,
+                      initial_radius=5, random_state=random_state)
+    pca_plot(movies_df, kohonen, "Kohonen Clustering with PCA")
+
+    # Plot de PCA de jerarquico
+    hierarchical = HierarchicalClustering(
+        K=3, distance_metric=ClusteringDistance.CENTROID)
+    pca_plot(movies_df, hierarchical, "Hierarchical Clustering with PCA")

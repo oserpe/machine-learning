@@ -1,0 +1,10 @@
+{'K': 4, 'hierarchical_distance_metric': 0, 'model': 'hierarchical'}
+              precision    recall  f1-score   support
+
+   Adventure       0.75      0.21      0.33        28
+      Comedy       0.00      0.00      0.00        78
+       Drama       0.48      0.98      0.64        94
+
+    accuracy                           0.49       200
+   macro avg       0.41      0.40      0.33       200
+weighted avg       0.33      0.49      0.35       200
