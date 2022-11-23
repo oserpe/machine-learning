@@ -4,10 +4,10 @@ import seaborn as sns
 import re as regex
 from .metrics import Metrics
 
-def plot_n_k_fold_cv_eval(X, y, n, model, k: int, X_features: list = None, y_feature: str = None, classes: list = None):
+def plot_n_k_fold_cv_eval(X, y, n, model, k: int, X_features: list = None, y_features: list = None, classes: list = None):
     print("Processing N-K-Fold CV evaluation...")
     avg_metrics, std_metrics = Metrics.n_k_fold_cross_validation_eval(
-        X, y, n, model, k, X_features, y_feature, classes)
+        X, y, n, model, k, X_features, y_features, classes)
     
     print("Plotting N-K-Fold CV evaluation...")
     Metrics.plot_metrics_heatmap_std(
@@ -27,7 +27,7 @@ def plot_curves_with_legend(inputs, outputs, legends = None, X_label = "X", Y_la
     plt.ylabel(Y_label)
     plt.show()
 
-def plot_kohonen_matrix_predictions(kohonen_model, y_predictions, kohonen_predictions, classes):
+def plot_kohonen_matrix_predictions(kohonen_model, y_values, kohonen_predictions, classes):
     K = kohonen_model.K
 
     x_indexes = [pos // K for pos in kohonen_predictions]
@@ -41,7 +41,7 @@ def plot_kohonen_matrix_predictions(kohonen_model, y_predictions, kohonen_predic
             kohonen_matrix[x][y] = {key: 0 for key in keys}
 
     # Fill the matrix
-    for x, y, genre in zip(x_indexes, y_indexes, y_predictions):
+    for x, y, genre in zip(x_indexes, y_indexes, y_values):
         kohonen_matrix[x][y][genre] += 1
 
     # Convert every dict to str

@@ -70,7 +70,7 @@ class UnsupervisedClassifier(BaseEstimator):
         # Get the cluster that x belongs to
         cluster_indexes = self._model.predict(X)
 
-        return np.array([self.clusters[cluster_index][self.y_feature].mode()[0] for cluster_index in cluster_indexes])
+        return np.array([self.clusters[cluster_index][self.y_feature].mode().loc[0] if len(self.clusters[cluster_index].values) > 0 else None for cluster_index in cluster_indexes])
 
     def score(self, X, y):
         predictions = self.predict(X)
