@@ -1,3 +1,4 @@
+import warnings
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import Perceptron, SGDClassifier
 from sklearn.model_selection import GridSearchCV, train_test_split
@@ -7,6 +8,13 @@ from sklearn.tree import DecisionTreeClassifier
 from ..utils.estimator import Estimator
 
 from ..dataset.utils import prepare_dataset
+
+
+def warn(*args, **kwargs):
+    pass
+
+
+warnings.warn = warn
 
 
 def print_grid_search_results(grid_search, filename=None):
