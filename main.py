@@ -8,8 +8,10 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from matplotlib import pyplot as plt
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier 
+from .metrics import Metrics
 
 result_column = "diagnosis"
+result_column_labels = ["M", "B"]
 
 class Estimator(Enum):
     SVC_LINEAR = {"estimator": SVC(kernel="linear"), "algorithm": "SAMME"}
@@ -18,17 +20,19 @@ class Estimator(Enum):
     PERCEPTRON = {"estimator": Perceptron(), "algorithm": "SAMME"}
     
 
-def classify(estimator: Estimator, X_train, X_test, y_train, y_test, random_state):
+def adaboost_classify(estimator: Estimator, X_train, X_test, y_train, random_state):
     adaboost = AdaBoostClassifier(estimator=estimator.value["estimator"], random_state=random_state, algorithm=estimator.value["algorithm"])
 
     adaboost.fit(X_train, y_train)
     
-    predictions = adaboost.predict(X_test)
+    return adaboost.predict(X_test)
     
-    for i in range(len(predictions)):
-        print("Prediction: ", predictions[i], "Actual: ", y_test.iloc[i])
-
-    print("Accuracy: ", adaboost.score(X_test, y_test))
+def metrics(y_test, y_pred):
+    cf_matrix = Metrics.get_confusion_matrix(y_test, y_pred, result_column_labels)
+    Metrics.plot_confusion_matrix_heatmap(cf_matrix)
+    
+    metrics, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
+    Metrics.plot_metrics_heatmap(metrics)
 
 def main(data_df):
 
@@ -51,7 +55,8 @@ def main(data_df):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=random_state)
 
-    classify(Estimator.SVC_LINEAR, X_train, X_test, y_train, y_test, random_state)
+    y_pred = adaboost_classify(Estimator.SVC_LINEAR, X_train, X_test, y_train, random_state)
+    metrics(y_test, y_pred)
         
 def plot_hist(data_df):
     data_df.hist(edgecolor='black', linewidth=1,
