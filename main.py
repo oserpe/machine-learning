@@ -19,15 +19,19 @@ class Estimator(Enum):
     KNN = {"estimator": KNeighborsClassifier(), "algorithm": "SAMME"}
     PERCEPTRON = {"estimator": Perceptron(), "algorithm": "SAMME"}
     
-def estimator_classify(estimator: Estimator, X_train, X_test, y_train):
+def estimator_classify(estimator: Estimator, X_train, X_test, y_train, random_state):
     estimator = estimator.value["estimator"]
+    estimator.random_state = random_state
 
     estimator.fit(X_train, y_train)
     
     return estimator.predict(X_test)
 
 def adaboost_classify(estimator: Estimator, X_train, X_test, y_train, random_state):
-    adaboost = AdaBoostClassifier(estimator=estimator.value["estimator"], random_state=random_state, algorithm=estimator.value["algorithm"], n_estimators=100, learning_rate=0.1)
+    subjacent_estimator = estimator.value["estimator"]
+    subjacent_estimator.random_state = random_state
+
+    adaboost = AdaBoostClassifier(estimator=subjacent_estimator, random_state=random_state, algorithm=estimator.value["algorithm"], n_estimators=100, learning_rate=0.1)
 
     adaboost.fit(X_train, y_train)
     
@@ -63,7 +67,7 @@ def main(data_df, estimator: Estimator = Estimator.PERCEPTRON, use_adaboost: boo
     if use_adaboost:
         y_pred = adaboost_classify(estimator, X_train, X_test, y_train, random_state)
     else:
-        y_pred = estimator_classify(estimator, X_train, X_test, y_train)
+        y_pred = estimator_classify(estimator, X_train, X_test, y_train, random_state)
     metrics(y_test, y_pred)
         
 def plot_hist(data_df):
