@@ -31,7 +31,7 @@ class Metrics:
             folds_to_return = k
 
         # Shuffle the dataset
-        shuffled_dataset = list(zip(x, y))
+        shuffled_dataset = list(zip(x.values, y.values))
         np.random.shuffle(shuffled_dataset)
         x, y = map(
             np.array, zip(*shuffled_dataset))
@@ -62,9 +62,9 @@ class Metrics:
                 x_test = pd.DataFrame(
                     x_test, columns=x_column_names)
                 y_train = pd.DataFrame(
-                    y_train, columns=y_column_names)
+                    y_train, columns=np.array(['diagnosis']))
                 y_test = pd.DataFrame(
-                    y_test, columns=y_column_names)
+                    y_test, columns=np.array(['diagnosis']))
 
             # Load the test and train sets into the folds
             folds.append({
@@ -88,12 +88,12 @@ class Metrics:
         results = []
         errors = []
         k_metrics_per_class = {
-            'accuracy': {label: [] for label in model.classes},
-            'precision': {label: [] for label in model.classes},
-            'recall': {label: [] for label in model.classes},
-            'f1-score': {label: [] for label in model.classes},
-            'tp-rate': {label: [] for label in model.classes},
-            'fp-rate': {label: [] for label in model.classes},
+            'accuracy': {label: [] for label in y_column_names},
+            'precision': {label: [] for label in y_column_names},
+            'recall': {label: [] for label in y_column_names},
+            'f1-score': {label: [] for label in y_column_names},
+            'tp-rate': {label: [] for label in y_column_names},
+            'fp-rate': {label: [] for label in y_column_names},
         }
 
         for fold in folds:
@@ -101,7 +101,7 @@ class Metrics:
             # Train the model
             x_train = fold['x_train']
             y_train = fold['y_train']
-            model.fit(x_train, y_train)
+            model.fit(x_train, y_train.values.ravel())
             # Evaluate the model on the test set
             x_test = fold['x_test']
             y_test = fold['y_test']
@@ -113,22 +113,22 @@ class Metrics:
             cf_matrix = Metrics.get_confusion_matrix(
                 y_test, 
                 predictions, 
-                labels=model.classes)
+                labels=y_column_names)
             
             metrics_df = Metrics.get_metrics_per_class(cf_matrix)[0]
 
             # Push the metrics to the total metrics
             for metric_label in k_metrics_per_class:
-                for label in model.classes:
+                for label in y_column_names:
                     k_metrics_per_class[metric_label][label].append(metrics_df[metric_label][label])
 
             results.append(predictions)
-            errors.append(Metrics.error(predictions, y_test,
-                          uses_df=x_column_names is not None))
+            # errors.append(Metrics.error(predictions, y_test,
+            #               uses_df=y_column_names is not None))
 
         # Compute the average and standard deviation metrics
-        average_metrics = {metric_label: {label: np.mean(k_metrics_per_class[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
-        std_metrics = {metric_label: {label: np.std(k_metrics_per_class[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
+        average_metrics = {metric_label: {label: np.mean(k_metrics_per_class[metric_label][label]) for label in y_column_names} for metric_label in k_metrics_per_class}
+        std_metrics = {metric_label: {label: np.std(k_metrics_per_class[metric_label][label]) for label in y_column_names} for metric_label in k_metrics_per_class}
                 
 
         return results, errors, k_metrics_per_class, average_metrics, std_metrics
@@ -140,21 +140,21 @@ class Metrics:
 
         # Evaluate the model on each fold
         k_metrics_per_class = {
-            'accuracy': {label: [] for label in model.classes},
-            'precision': {label: [] for label in model.classes},
-            'recall': {label: [] for label in model.classes},
-            'f1-score': {label: [] for label in model.classes},
-            'tp-rate': {label: [] for label in model.classes},
-            'fp-rate': {label: [] for label in model.classes},
+            'accuracy': {label: [] for label in y_column_names},
+            'precision': {label: [] for label in y_column_names},
+            'recall': {label: [] for label in y_column_names},
+            'f1-score': {label: [] for label in y_column_names},
+            'tp-rate': {label: [] for label in y_column_names},
+            'fp-rate': {label: [] for label in y_column_names},
         }
 
         avg_std_metrics = {
-            'accuracy': {label: [] for label in model.classes},
-            'precision': {label: [] for label in model.classes},
-            'recall': {label: [] for label in model.classes},
-            'f1-score': {label: [] for label in model.classes},
-            'tp-rate': {label: [] for label in model.classes},
-            'fp-rate': {label: [] for label in model.classes},
+            'accuracy': {label: [] for label in y_column_names},
+            'precision': {label: [] for label in y_column_names},
+            'recall': {label: [] for label in y_column_names},
+            'f1-score': {label: [] for label in y_column_names},
+            'tp-rate': {label: [] for label in y_column_names},
+            'fp-rate': {label: [] for label in y_column_names},
         }
 
 
@@ -163,16 +163,15 @@ class Metrics:
             # Evaluate the model on each fold
             n_results, n_errors, n_k_metrics_per_class, n_average_metrics, n_std_metrics = Metrics.k_fold_cross_validation_eval(
                 x, y, model, k, x_column_names=x_column_names, y_column_names=y_column_names)
-
             # Push the average metrics of the n-k-fold to the total metrics
             for metric_label in k_metrics_per_class:
-                for label in model.classes:
+                for label in y_column_names:
                     k_metrics_per_class[metric_label][label].append(n_average_metrics[metric_label][label])
                     avg_std_metrics[metric_label][label].append(n_std_metrics[metric_label][label])
 
         # Compute the average and standard deviation metrics
-        average_metrics = {metric_label: {label: np.mean(k_metrics_per_class[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
-        std_metrics = {metric_label: {label: np.mean(avg_std_metrics[metric_label][label]) for label in model.classes} for metric_label in k_metrics_per_class}
+        average_metrics = {metric_label: {label: np.mean(k_metrics_per_class[metric_label][label]) for label in y_column_names} for metric_label in k_metrics_per_class}
+        std_metrics = {metric_label: {label: np.mean(avg_std_metrics[metric_label][label]) for label in y_column_names} for metric_label in k_metrics_per_class}
 
         return average_metrics, std_metrics
 
