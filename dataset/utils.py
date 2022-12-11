@@ -5,7 +5,7 @@ result_column = "diagnosis"
 result_column_labels = ["M", "B"]
 
 
-def prepare_dataset(standardize=True):
+def prepare_dataset(standardize=True, convert_to_binary=True):
     data_df = pd.read_csv(
         "./machine-learning/dataset/breast_cancer_wisconsin_data.csv", header=0, sep=',')
 
@@ -20,6 +20,10 @@ def prepare_dataset(standardize=True):
 
     y = data_df[result_column]
     X = data_df.drop(result_column, axis=1)
+
+    if convert_to_binary:
+        y = y.replace("M", 1)
+        y = y.replace("B", 0)
 
     if standardize:
         X = pd.DataFrame(StandardScaler().fit_transform(X), columns=X.columns)
