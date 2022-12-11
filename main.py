@@ -19,9 +19,15 @@ class Estimator(Enum):
     KNN = {"estimator": KNeighborsClassifier(), "algorithm": "SAMME"}
     PERCEPTRON = {"estimator": Perceptron(), "algorithm": "SAMME"}
     
+def estimator_classify(estimator: Estimator, X_train, X_test, y_train):
+    estimator = estimator.value["estimator"]
+
+    estimator.fit(X_train, y_train)
+    
+    return estimator.predict(X_test)
 
 def adaboost_classify(estimator: Estimator, X_train, X_test, y_train, random_state):
-    adaboost = AdaBoostClassifier(estimator=estimator.value["estimator"], random_state=random_state, algorithm=estimator.value["algorithm"])
+    adaboost = AdaBoostClassifier(estimator=estimator.value["estimator"], random_state=random_state, algorithm=estimator.value["algorithm"], n_estimators=100, learning_rate=0.1)
 
     adaboost.fit(X_train, y_train)
     
@@ -34,7 +40,7 @@ def metrics(y_test, y_pred):
     metrics, metrics_df = Metrics.get_metrics_per_class(cf_matrix)
     Metrics.plot_metrics_heatmap(metrics)
 
-def main(data_df):
+def main(data_df, estimator: Estimator = Estimator.PERCEPTRON, use_adaboost: bool = False, random_state: int = 13):
 
     # drop duplicates by id
     data_df.drop_duplicates(subset=["id"], keep="first", inplace=True)
@@ -51,11 +57,13 @@ def main(data_df):
     # standardize
     X = pd.DataFrame(StandardScaler().fit_transform(X), columns=X.columns)
 
-    random_state = 13
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=random_state)
 
-    y_pred = adaboost_classify(Estimator.SVC_LINEAR, X_train, X_test, y_train, random_state)
+    if use_adaboost:
+        y_pred = adaboost_classify(estimator, X_train, X_test, y_train, random_state)
+    else:
+        y_pred = estimator_classify(estimator, X_train, X_test, y_train)
     metrics(y_test, y_pred)
         
 def plot_hist(data_df):
@@ -109,5 +117,9 @@ def dataset_analysis(data_df):
 
 if __name__ == "__main__":
     data_df = pd.read_csv("./machine-learning/breast_cancer_wisconsin_data.csv", header=0, sep=',')
-    main(data_df)
     # dataset_analysis(data_df)
+
+    estimator = Estimator.DECISION_TREE
+    use_adaboost = True
+    random_state = 13
+    main(data_df, estimator=estimator, use_adaboost=use_adaboost, random_state=random_state)
