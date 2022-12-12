@@ -27,6 +27,8 @@ def pca_loadings_hbar_plot(loadings, features, component_label):
     # decrease space between bars
     component.plot(kind="bar", figsize=(20, 5), width=0.5)
     plt.tight_layout()
+    plt.yticks(fontsize=8.25)
+    plt.xticks(fontsize=8.25)
     plt.show()
 
 def pca_plot(pca, pca_data, data_df):
@@ -41,7 +43,6 @@ def pca_plot(pca, pca_data, data_df):
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel(f'PC1 {pca.explained_variance_ratio_[0]*100:.2f}%', fontsize=13)
     ax.set_ylabel(f'PC2 {pca.explained_variance_ratio_[1]*100:.2f}%', fontsize=13)
-    # ax.set_title("2 component PCA", fontsize=20)
 
     targets = [1, 0]
     colors = ["r", "b"]
@@ -53,13 +54,12 @@ def pca_plot(pca, pca_data, data_df):
                    s=50,
                    alpha=0.35)
     ax.legend(["M", "B"])
-
     plt.show()
 
     data_df.drop("diagnosis", inplace=True, axis=1)
 
-    pca_loadings_hbar_plot(pca.components_[0], data_df.columns, "First component")
-    pca_loadings_hbar_plot(pca.components_[1], data_df.columns, "Second component")
+    pca_loadings_hbar_plot(pca.components_[0], data_df.columns, "First component loadings")
+    pca_loadings_hbar_plot(pca.components_[1], data_df.columns, "Second component loadings")
 
 
 def dataset_analysis(data_df):

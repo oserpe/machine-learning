@@ -40,7 +40,8 @@ def main(estimator: Estimator = Estimator.PERCEPTRON, use_adaboost: bool = False
 if __name__ == "__main__":
     data_df = pd.read_csv(
         "./machine-learning/dataset/breast_cancer_wisconsin_data.csv", header=0, sep=',')
-    # dataset_analysis(data_df)
+    dataset_analysis(data_df)
+    exit(1)
     estimator = Estimator.DECISION_TREE
     use_adaboost = True
     random_state = 1
