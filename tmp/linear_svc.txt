@@ -1,0 +1,4 @@
+Worst parameters: {'C': 0.001, 'max_iter': 100, 'random_state': 0}
+Worst cross-validation score: 0.936
+Best parameters: {'C': 0.1, 'max_iter': 100, 'random_state': 0}
+Best cross-validation score: 0.976

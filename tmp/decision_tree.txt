@@ -1,0 +1,4 @@
+Worst parameters: {'criterion': 'entropy', 'random_state': 0}
+Worst cross-validation score: 0.899
+Best parameters: {'criterion': 'entropy', 'random_state': 0}
+Best cross-validation score: 0.899

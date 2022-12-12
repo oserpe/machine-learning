@@ -1,0 +1,2 @@
+Best parameters: {'learning_rate': 0.1, 'n_estimators': 20, 'random_state': 0}
+Best cross-validation score: 0.971

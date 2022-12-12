@@ -1,0 +1,4 @@
+Worst parameters: {'eta0': 10, 'max_iter': 4, 'random_state': 0}
+Worst cross-validation score: 0.932
+Best parameters: {'eta0': 0.001, 'max_iter': 6, 'random_state': 0}
+Best cross-validation score: 0.971
