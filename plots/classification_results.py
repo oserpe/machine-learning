@@ -1,6 +1,7 @@
 from ..metrics.metrics import Metrics
 from ..utils.estimator import Estimator
-from ..main import result_column_labels
+
+result_column_labels = ["M", "B"]
 
 def plot_metrics(y_test, y_pred):
     cf_matrix = Metrics.get_confusion_matrix(

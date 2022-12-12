@@ -8,7 +8,7 @@ from .models.estimator import estimator_classify
 
 from .models.adaboost import adaboost_classify
 from .dataset.utils import prepare_dataset
-
+from .dataset.analysis import dataset_analysis
 from .utils.estimator import Estimator
 
 result_column = "diagnosis"
@@ -39,7 +39,7 @@ def main(estimator: Estimator = Estimator.PERCEPTRON, use_adaboost: bool = False
 
 if __name__ == "__main__":
     data_df = pd.read_csv(
-        "./machine-learning/breast_cancer_wisconsin_data.csv", header=0, sep=',')
+        "./machine-learning/dataset/breast_cancer_wisconsin_data.csv", header=0, sep=',')
     # dataset_analysis(data_df)
     estimator = Estimator.DECISION_TREE
     use_adaboost = True
