@@ -5,7 +5,7 @@ result_column = "diagnosis"
 result_column_labels = ["M", "B"]
 
 
-def prepare_dataset(standardize=True, convert_to_binary=True):
+def prepare_dataset(standardize=True, convert_to_binary=False):
     data_df = pd.read_csv(
         "./machine-learning/dataset/breast_cancer_wisconsin_data.csv", header=0, sep=',')
 
